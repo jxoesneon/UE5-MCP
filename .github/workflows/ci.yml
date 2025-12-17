@@ -10,6 +10,47 @@ permissions:
   contents: read
 
 jobs:
+  docs_contract:
+    name: Docs contract check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Python smoke check
+        run: |
+          python3 -m compileall scripts
+
+      - name: Docs contract validation
+        run: |
+          python3 scripts/check_docs_contract.py
+
+  precommit:
+    name: Pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pre-commit
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install pre-commit
+
+      - name: Run pre-commit
+        run: |
+          pre-commit run --all-files
+
   markdownlint:
     name: Markdown lint
     runs-on: ubuntu-latest

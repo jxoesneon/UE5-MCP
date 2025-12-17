@@ -68,6 +68,20 @@ Pull requests are expected to meet these standards:
   - Integration tests for adapters (prefer fakes unless running real targets).
 - **Docs**: examples and references are accurate; links are not obviously broken.
 
+## Pre-PR Checklist (Local)
+Before opening a PR, run the repository verification script:
+
+```bash
+bash scripts/verify.sh
+```
+
+Recommended (optional) local hooks:
+
+```bash
+python3 -m pip install pre-commit
+pre-commit install
+```
+
 ## Pull Request Process
 - **Branching**: create a topic branch off the default branch.
 - **Commits**: keep commits focused; avoid drive-by unrelated formatting.
@@ -83,6 +97,18 @@ Reviewers will focus on:
 - Safety and policy boundaries
 - Determinism/idempotency semantics
 - Observability and auditability (run manifests, structured errors)
+
+## Post-PR Checklist (CI + Review)
+After opening a PR:
+
+- Ensure GitHub Actions checks are green.
+- If you are a reviewer (not the PR author), you can wait for checks and approve/merge via:
+
+```bash
+bash scripts/pr_wait_and_merge.sh <pr-number-or-url>
+```
+
+Note: GitHub does not allow approving your own PR; the script will attempt approval best-effort.
 
 ## Security Reporting
 This project may eventually control powerful editor automation workflows. Treat it as security-sensitive.

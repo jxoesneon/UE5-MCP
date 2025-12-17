@@ -45,6 +45,7 @@ UE5-MCP/
 # Monorepo Structure (2025 Specification)
 
 ## Purpose
+
 This document defines the *recommended* repository layout for a 2025 Python-first implementation of the UE5-MCP specification.
 
 - **Specification-first**: The docs in this repository are the contract; code must conform.
@@ -52,34 +53,40 @@ This document defines the *recommended* repository layout for a 2025 Python-firs
 - **Packaging-ready**: Each module is a real Python package with independent tests and clear boundaries.
 
 ## Design Principles
+
 - **Stable contracts**: JSON schema + versioned protocol artifacts live in `modules/mcp_protocol/`.
 - **Thin adapters**: Blender/UE5 packages should focus on transport + target-specific execution, not orchestration.
 - **Determinism and auditability**: Runs produce manifests and artifacts (see `architecture.md`, `automation.md`).
 - **Replaceable AI**: AI provider integrations must remain optional and isolated behind interfaces.
 
 ## Build and Dependency Management (2025 baseline)
+
 - **Python**: 3.11+.
 - **Reproducibility**: prefer `uv.lock` (or an equivalent lock) committed to the repo.
 - **Optional extras**: target-specific dependencies are installed via extras (e.g., `.[blender]`, `.[ue5]`, `.[dev]`).
 
 ## Testing and Quality Gates
+
 - **Unit tests**: colocated per module (fast, hermetic).
 - **Contract tests**: validate that CLI/SDK outputs conform to JSON schemas.
 - **Integration tests**: run adapters against fakes/stubs; real Blender/UE tests are opt-in.
 - **CI gates** (recommended): formatting + linting, type checking, tests, schema validation, docs link checks.
 
 ## Release and Versioning
+
 - **SemVer**: version the protocol and the implementation separately.
 - **Protocol**: changes tracked under `modules/mcp_protocol/versions/` and tested via contract suite.
 - **Implementation**: tagged releases; changelog entries must link to protocol version compatibility.
 
 ## Mapping Features to Packages
+
 - **Command surface**: `modules/mcp_cli/` (user-facing) calling into `modules/mcp_core/`.
 - **Planning/execution**: `modules/mcp_core/planning` and `modules/mcp_core/execution`.
 - **UE5 automation**: `modules/mcp_target_ue5/` (Remote Control API, Python Editor Scripting, etc.).
 - **Blender automation**: `modules/mcp_target_blender/` (addon + scripts + IPC).
 
 ## Additional Enhancements to Consider
+
 Dedicated AI Scripting Layer
 
 Add a `modules/mcp_ai/` package if/when AI becomes a first-class runtime component (providers, evals, budgeting).

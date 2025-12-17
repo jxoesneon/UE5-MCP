@@ -1,11 +1,13 @@
 # Security Policy
 
 ## Supported Versions
+
 This repository is currently **specification-first**. Until a runnable implementation exists, “supported versions” refers to the documentation/spec set on the default branch.
 
 If/when releases are published, this section will be updated to describe supported release lines and security update timelines.
 
 ## Reporting a Vulnerability
+
 Because this project is intended to automate powerful editor-time actions (UE5/Blender), treat it as security-sensitive.
 
 Please **do not** open public issues for vulnerabilities that could enable any of the following:
@@ -28,6 +30,7 @@ When reporting, include:
 - suggested remediation
 
 ## Security Expectations (Design-Level)
+
 Even before code exists, the specification set assumes:
 
 - **policy gating** for destructive actions

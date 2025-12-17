@@ -1,6 +1,7 @@
 # MCP Troubleshooting Guide
 
 ## Overview
+
 This document provides diagnostic playbooks for common MCP failures across:
 
 - CLI/runtime
@@ -13,6 +14,7 @@ It assumes MCP returns structured errors as defined in `api_reference.md`.
 ## Before You Debug
 
 ### Capture a Reproducible Run
+
 For any report, collect:
 
 - exact command invoked
@@ -24,6 +26,7 @@ For any report, collect:
 - the artifact root and any generated manifests (see below)
 
 ### Logs and Artifacts
+
 The exact locations are implementation-defined, but the recommended defaults are:
 
 - Logs: JSON logs to stdout (and optionally a log file if configured)
@@ -33,21 +36,25 @@ The exact locations are implementation-defined, but the recommended defaults are
 If you enabled file logging, include the log file path.
 
 ## Error Code Triage
+
 Use the `error.code` to choose the correct playbook.
 
 ### `VALIDATION_ERROR`
+
 - **Meaning**: Inputs do not match the tool schema.
 - **Fix**:
   - re-check argument order and types
   - run `mcp.help "<tool>"` to confirm schema
 
 ### `DEPENDENCY_MISSING`
+
 - **Meaning**: Required runtime/plugin/add-on is missing.
 - **Fix**:
   - confirm Blender/UE plugins and Python dependencies as per `dependencies.md`
   - verify the target environment is the expected version
 
 ### `TARGET_UNAVAILABLE`
+
 - **Meaning**: Blender/UE target is not reachable.
 - **Fix**:
   - verify the target is running
@@ -55,6 +62,7 @@ Use the `error.code` to choose the correct playbook.
   - ensure local firewall rules allow local connections
 
 ### `POLICY_DENIED`
+
 - **Meaning**: Safety/policy layer rejected the action.
 - **Fix**:
   - inspect policy configuration (`configurations.md`)
@@ -63,6 +71,7 @@ Use the `error.code` to choose the correct playbook.
   - confirm destructive actions are enabled only when intended
 
 ### `TIMEOUT`
+
 - **Meaning**: Tool did not complete within the configured timeout.
 - **Fix**:
   - re-run with a higher timeout budget
@@ -70,6 +79,7 @@ Use the `error.code` to choose the correct playbook.
   - check whether the target is stalled (UE5 editor busy)
 
 ### `IO_ERROR`
+
 - **Meaning**: Filesystem operations failed.
 - **Fix**:
   - confirm the destination path exists
@@ -77,6 +87,7 @@ Use the `error.code` to choose the correct playbook.
   - avoid overwrites unless explicitly enabled
 
 ### `INTERNAL_ERROR`
+
 - **Meaning**: Unexpected failure.
 - **Fix**:
   - include logs + artifacts + config snapshot hash in the report
@@ -85,6 +96,7 @@ Use the `error.code` to choose the correct playbook.
 ## General Issues
 
 ### MCP Not Running / CLI Not Found
+
 Symptoms:
 
 - `command not found: mcp`
@@ -97,6 +109,7 @@ Resolution:
 - confirm `PATH` includes the installed entrypoint
 
 ### Config Parse Errors
+
 Symptoms:
 
 - JSON parse failures
@@ -111,6 +124,7 @@ Resolution:
 ## Blender Target Playbooks
 
 ### Scene Not Generating
+
 Common causes:
 
 - Blender is not running or MCP add-on is not enabled
@@ -124,6 +138,7 @@ Resolution:
 - run the tool in `--dry-run` first to validate inputs
 
 ### Exported Assets Missing Textures
+
 Common causes:
 
 - textures are not embedded or not referenced correctly
@@ -137,6 +152,7 @@ Resolution:
 ## UE5 Target Playbooks
 
 ### UE5 Not Reachable
+
 Common causes:
 
 - UE5 editor not running
@@ -151,6 +167,7 @@ Resolution:
 - restart UE5 after enabling plugins
 
 ### Terrain/Population Causes Severe Slowdown
+
 Common causes:
 
 - high density instancing
@@ -163,6 +180,7 @@ Resolution:
 - profile with `mcp.profile_performance` and review the report artifact
 
 ### Generated Blueprints Don’t Compile
+
 Common causes:
 
 - incomplete node wiring
@@ -176,6 +194,7 @@ Resolution:
 ## AI Integration Playbooks
 
 ### AI Features Not Working
+
 Common causes:
 
 - `ai.enabled=false`
@@ -188,6 +207,7 @@ Resolution:
 - confirm budget limits are not exceeded
 
 ## Resetting to a Known-Good State
+
 If problems persist:
 
 - reset configuration:

@@ -1,17 +1,20 @@
 # MCP Workflow
 
 ## Overview
+
 This document specifies the **end-to-end, editor-time workflow** for MCP across Blender and Unreal Engine 5 (UE5). It is written as an implementable contract: what happens at each stage, which artifacts are produced, and what “correctness” means (determinism, safety, and debuggability).
 
 This workflow assumes MCP is invoked via CLI or an agent, and executed against one or more explicit **targets** (a Blender session, a UE5 Editor instance/project).
 
 ## Key Invariants
+
 - **Explicit targeting**: tool calls MUST target a specific Blender session and/or UE5 project context.
 - **Artifact-first**: cross-runtime handoff MUST occur via artifacts (exports + manifests), not implicit state.
 - **Deterministic-by-default**: generators SHOULD support seeding and stable outputs when given the same inputs.
 - **Safe-by-default**: destructive operations MUST be opt-in and auditable.
 
 ## Execution Modes
+
 All commands SHOULD support the following modes (as applicable):
 
 - `--dry-run`: validate inputs, produce a plan and/or diff, but do not mutate targets.
@@ -25,9 +28,11 @@ Long-running operations SHOULD support:
 - resumability when feasible (checkpoint artifacts)
 
 ## Core Artifacts
+
 Artifacts are stored under an artifact root (implementation-defined). Every artifact MUST have a manifest.
 
 ### 1) Run Manifest
+
 A per-run manifest that records:
 
 - `run_id`, `request_id`
@@ -38,6 +43,7 @@ A per-run manifest that records:
 - timestamps and durations
 
 ### 2) Asset Export Manifest
+
 Each exported asset MUST include metadata sufficient for reliable import:
 
 - format (`fbx`, `gltf`, `obj`)
@@ -47,6 +53,7 @@ Each exported asset MUST include metadata sufficient for reliable import:
 - deterministic seed and generation provenance where applicable
 
 ### 3) Reports
+
 Profiling produces a report artifact:
 
 - scene/level identifier
@@ -57,6 +64,7 @@ Profiling produces a report artifact:
 ## End-to-End Pipeline
 
 ### Stage 0: Preflight (Always)
+
 1. Load configuration (see `configurations.md`).
 2. Resolve targets (Blender session / UE5 project).
 3. Validate tool inputs against schemas.
@@ -71,6 +79,7 @@ Outputs:
 - a plan (if invoked via natural language or high-level intent)
 
 ### Stage 1: Blender Authoring (Scene + Assets)
+
 Primary tools:
 
 - `mcp.generate_scene`
@@ -89,6 +98,7 @@ Failure modes:
 - non-deterministic geometry due to non-seeded generators
 
 ### Stage 2: Export from Blender (Handoff Boundary)
+
 Primary tool:
 
 - `mcp.export_asset`
@@ -105,6 +115,7 @@ Failure modes:
 - incompatible format settings for UE import
 
 ### Stage 3: Import into UE5 (Ingestion)
+
 Primary tool:
 
 - `mcp.import_asset`
@@ -121,6 +132,7 @@ Failure modes:
 - missing dependencies (textures, plugin requirements)
 
 ### Stage 4: Procedural Level Design in UE5
+
 Primary tools:
 
 - `mcp.generate_terrain`
@@ -138,6 +150,7 @@ Failure modes:
 - invalid asset references
 
 ### Stage 5: Blueprint Automation
+
 Primary tool:
 
 - `mcp.generate_blueprint`
@@ -155,6 +168,7 @@ Failure modes:
 - incompatible engine version APIs
 
 ### Stage 6: Profiling & Optimization
+
 Primary tool:
 
 - `mcp.profile_performance`
@@ -165,6 +179,7 @@ Contract:
 - Suggested optimizations MUST be categorized by risk and expected impact.
 
 ## Rollback & Recovery
+
 Rollback strategies vary by target:
 
 - Blender: use file saves/checkpoints; MCP SHOULD support “checkpoint before apply”.
@@ -176,6 +191,7 @@ If an operation fails mid-run:
 - MCP SHOULD support replaying from the last completed stage where safe.
 
 ## Best Practices
+
 - Use `--dry-run` for new automation flows and CI validation.
 - Treat AI suggestions as untrusted; enforce schema validation and policy gates.
 - Keep a consistent asset naming convention and deterministic seeding for reproducible builds.

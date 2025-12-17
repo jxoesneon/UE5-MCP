@@ -1,71 +1,104 @@
 # MCP Dependencies
 
 ## Overview
-This document outlines the required dependencies for running Model Context Protocol (MCP) with Blender and Unreal Engine 5 (UE5). These dependencies include Python packages, Blender add-ons, and UE5 integrations.
+This document defines the **toolchain and dependency expectations** for building and running MCP across Blender and Unreal Engine 5.
 
----
+The repository is intended to be reproducible in 2025 terms: pinned versions, lockfiles, and explicit platform requirements.
 
-## **1. General Dependencies**
-### **1.1 Python Requirements**
-MCP requires Python 3.x. The following Python packages must be installed:
+## Supported Platforms
+- macOS (developer workstation)
+- Windows (common UE5 workstation)
+- Linux (CI and some content pipelines)
 
-#### Required Packages:
-```bash
-pip install numpy scipy pillow requests openai unrealcv
-```
-- `numpy`: Used for mathematical computations and optimizations.
-- `scipy`: Required for advanced mathematical operations in procedural generation.
-- `pillow`: Used for image and texture processing.
-- `requests`: Handles API communication.
-- `openai`: Required for AI-based automation features.
-- `unrealcv`: Enables MCP communication with Unreal Engine.
+## 1. Language Runtime
 
----
+### Python
+- Minimum: Python 3.11
+- Recommended: Python 3.12+
 
-## **2. Blender-Specific Dependencies**
-### **2.1 Blender Version**
-- Blender 3.x or later is required for MCP.
+Rationale:
 
-### **2.2 Required Blender Add-ons**
-- **Node Wrangler**: Enhances material creation workflows.
-- **Blender Python API**: Required for automation scripting.
+- Python 3.11+ performance and typing improvements
+- Compatibility with modern packaging and tooling
 
-To enable the required add-ons:
-1. Open Blender
-2. Navigate to `Edit` → `Preferences` → `Add-ons`
-3. Search for `Node Wrangler` and enable it.
+## 2. Python Dependency Management (Reproducible)
 
----
+MCP SHOULD be packaged using a modern Python packaging workflow.
 
-## **3. Unreal Engine 5-Specific Dependencies**
-### **3.1 UE5 Version**
-- Unreal Engine 5.1 or later is required.
+Recommended approach:
 
-### **3.2 Required Plugins**
-- **Python Editor Script Plugin**: Enables Python scripting within UE5.
-- **UnrealCV Plugin**: Facilitates AI-driven automation.
-- **Procedural Content Generation (PCG) Framework**: Used for automated level generation.
+- Use `pyproject.toml` for metadata and dependency declaration.
+- Use a lockfile for reproducible installs.
 
-### **3.3 Installing Plugins in UE5**
-1. Open Unreal Engine 5
-2. Navigate to `Edit` → `Plugins`
-3. Search for and enable:
-   - `Python Editor Script Plugin`
-   - `UnrealCV Plugin`
-   - `Procedural Content Generation (PCG) Framework`
-4. Restart UE5 for changes to take effect.
+Policy:
 
----
+- Do not commit `venv/` directories.
+- Pin and lock dependencies for CI and releases.
 
-## **4. Additional Requirements**
-### **4.1 AI Integration Dependencies**
-If using AI-powered automation, you need:
-- **OpenAI API Key** (for AI-driven commands and procedural generation)
-- **Stable Diffusion or Similar Models** (for AI-generated textures and materials)
+## 3. Python Packages (Conceptual Groups)
 
-### **4.2 Hardware Requirements**
-- **Blender & UE5**: Requires a system with at least 16GB RAM and a GPU with dedicated VRAM (NVIDIA RTX 30 series or higher recommended).
-- **AI Processing**: Some AI-based features may require additional GPU resources or cloud-based computing.
+The concrete dependency list is implementation-defined, but the system typically requires:
+
+### Core runtime
+- Schema validation (JSON Schema)
+- CLI framework
+- HTTP/WebSocket/stdio transport utilities
+- Structured logging
+
+### Procedural / asset tooling
+- Numeric + geometry helpers (`numpy`, optional)
+- Image/texture processing (`pillow`, optional)
+
+### AI providers (optional)
+- Provider SDKs (e.g., OpenAI-compatible SDK)
+
+### UE/Blender connectivity (optional)
+- UnrealCV (only if using UnrealCV transport)
+
+## 4. Blender Requirements
+
+### Blender Version
+- Minimum: Blender 3.x
+- Recommended: Blender 4.x
+
+### Add-ons
+- `Node Wrangler` (recommended for material workflows)
+
+### Blender execution model
+MCP can integrate via:
+
+- a Blender add-on that exposes an RPC interface
+- a controlled “run script in Blender” automation path
+
+## 5. Unreal Engine Requirements
+
+### UE5 Version
+- Minimum: Unreal Engine 5.1
+- Recommended: Unreal Engine 5.3+
+
+### Required Plugins
+- `Python Editor Script Plugin`
+- `Procedural Content Generation (PCG) Framework`
+
+### Optional Plugins
+- `UnrealCV Plugin` (only if UnrealCV-based transport is selected)
+
+## 6. AI & Model Runtime Requirements
+
+AI features are optional and must be gated by policy/config.
+
+- Cloud providers require an API key (see `configurations.md`).
+- Local diffusion models require sufficient GPU resources and are best run as a separate service.
+
+## 7. Hardware Guidance (Workstations)
+- **Blender + UE5**: 32GB RAM recommended.
+- **GPU**: 8–16GB VRAM recommended for UE5 editor workflows; more for local image generation.
+
+## 8. CI/CD Expectations
+- CI MUST run in a fully reproducible environment (locked dependencies).
+- CI SHOULD validate:
+  - schema/tool definitions
+  - formatting/lint
+  - unit tests
 
 For configuration details, refer to `configurations.md`.
-

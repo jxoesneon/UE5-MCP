@@ -1,120 +1,152 @@
 # MCP Configurations
 
 ## Overview
-This document outlines the available configuration settings for the Model Context Protocol (MCP). These settings allow users to customize automation behavior, AI integration, asset processing, and performance optimizations.
+This document defines MCP’s configuration model: file locations, schema, precedence, secrets handling, and operational guidance.
 
----
+Configuration is split by **target runtime**:
 
-## **1. General Configuration**
-### **1.1 Configuration File Location**
-The configuration file (`mcp_config.json`) is located in:
-- **Blender:** `~/.mcp/blender_mcp_config.json`
-- **Unreal Engine 5:** `~/.mcp/ue5_mcp_config.json`
+- Blender: `~/.mcp/blender_mcp_config.json`
+- UE5: `~/.mcp/ue5_mcp_config.json`
 
-### **1.2 Default Settings**
-The default settings can be modified in the config file:
+Implementations SHOULD support a single “effective config” view that merges defaults, config files, environment overrides, and CLI overrides.
+
+## Goals
+- **Reproducibility**: runs must be traceable to an immutable config snapshot hash.
+- **Safety**: secrets are never logged; destructive settings default to off.
+- **Portability**: configs are explicit and can be checked into a project repo (without secrets).
+- **Clarity**: every key has a documented type, default, and scope.
+
+## Configuration Precedence
+Highest priority wins:
+
+1. CLI flags (implementation-defined)
+2. Environment variables
+3. Target config file (Blender/UE5)
+4. Built-in defaults
+
+## Secrets Handling
+- Secrets MUST be supplied via environment variables or a separate secrets store.
+- Config files MUST NOT require embedding secrets.
+- Implementations MUST redact secrets in logs and in `mcp.config get` output by default.
+
+Recommended convention:
+
+- `MCP_AI_API_KEY` (or provider-specific equivalents)
+
+## Schema (Conceptual)
+The following is a conceptual schema. Implementations SHOULD also publish a JSON Schema for validation.
+
+### 1) Common Keys
 ```json
 {
-  "ai_enabled": true,
-  "default_export_format": "fbx",
-  "logging_level": "INFO",
-  "auto_update": true
-}
-```
-- **`ai_enabled`**: Enables/disables AI-driven automation.
-- **`default_export_format`**: Sets default format for asset exports (`fbx`, `obj`, `gltf`).
-- **`logging_level`**: Controls log verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`).
-- **`auto_update`**: Enables automatic updates for MCP.
-
----
-
-## **2. Blender-MCP Configuration**
-### **2.1 Scene Generation**
-```json
-{
-  "scene_generation": {
-    "default_style": "realistic",
-    "terrain_detail": "high",
-    "object_variation": true
-  }
-}
-```
-- **`default_style`**: Defines the default art style (`realistic`, `cartoon`, `sci-fi`).
-- **`terrain_detail`**: Controls procedural terrain quality (`low`, `medium`, `high`).
-- **`object_variation`**: Enables slight randomization for object uniqueness.
-
-### **2.2 Asset Processing**
-```json
-{
-  "asset_processing": {
-    "texture_resolution": "4K",
-    "lod_levels": 3,
-    "batch_processing": true
-  }
-}
-```
-- **`texture_resolution`**: Sets texture quality (`1K`, `2K`, `4K`, `8K`).
-- **`lod_levels`**: Defines the number of Levels of Detail (LODs) for optimizations.
-- **`batch_processing`**: Enables bulk asset processing.
-
----
-
-## **3. Unreal Engine 5-MCP Configuration**
-### **3.1 Level Design Automation**
-```json
-{
-  "level_design": {
-    "default_terrain_size": [1000, 1000],
-    "auto_populate": true,
-    "npc_spawn_density": 0.5
-  }
-}
-```
-- **`default_terrain_size`**: Defines the default width and height for terrain.
-- **`auto_populate`**: Automates asset placement in levels.
-- **`npc_spawn_density`**: Controls the density of AI-generated NPCs (0.0 - 1.0).
-
-### **3.2 Performance Optimization**
-```json
-{
-  "performance": {
-    "dynamic_lighting": false,
-    "max_polycount": 500000,
-    "physics_enabled": true
-  }
-}
-```
-- **`dynamic_lighting`**: Enables real-time lighting effects.
-- **`max_polycount`**: Defines the polygon limit per object.
-- **`physics_enabled`**: Toggles physics simulation for assets.
-
----
-
-## **4. AI Integration**
-```json
-{
-  "ai_integration": {
+  "protocol_version": "1.0",
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "output": "stdout"
+  },
+  "artifacts": {
+    "root": "~/.mcp/artifacts",
+    "write_manifests": true
+  },
+  "policy": {
+    "allow_destructive": false,
+    "allowed_paths": [],
+    "tool_allowlist": []
+  },
+  "ai": {
+    "enabled": true,
     "provider": "openai",
-    "api_key": "your-api-key",
-    "ai_suggestions": true
+    "budget": {
+      "max_requests_per_run": 20,
+      "max_total_tokens": 20000,
+      "max_total_cost_usd": 5.0,
+      "timeout_seconds": 60
+    }
   }
 }
 ```
-- **`provider`**: Specifies the AI service (`openai`, `stable_diffusion`).
-- **`api_key`**: API key for AI integration.
-- **`ai_suggestions`**: Enables AI-generated recommendations.
 
----
+### 2) Blender Target Keys
+```json
+{
+  "blender": {
+    "scene_generation": {
+      "default_style": "realistic",
+      "object_variation": true,
+      "default_seed": 0
+    },
+    "asset_processing": {
+      "texture_resolution": "4K",
+      "lod_levels": 3,
+      "batch_processing": true
+    },
+    "export": {
+      "default_format": "fbx",
+      "include_textures_by_default": false,
+      "axis": "-Z+Y",
+      "scale": 1.0
+    }
+  }
+}
+```
 
-## **5. Updating Configurations**
-To update settings, edit `mcp_config.json` or use:
-```bash
-mcp.config set key value
+### 3) UE5 Target Keys
+```json
+{
+  "ue5": {
+    "level_design": {
+      "default_terrain_size": [1000, 1000],
+      "auto_populate": false,
+      "default_seed": 0
+    },
+    "performance": {
+      "dynamic_lighting": false,
+      "max_polycount": 500000,
+      "physics_enabled": true,
+      "budgets": {
+        "max_instances": 200000,
+        "max_draw_calls": 5000
+      }
+    }
+  }
+}
 ```
-Example:
-```bash
-mcp.config set logging_level DEBUG
-```
+
+## Environment Variables
+Implementations SHOULD support overrides using environment variables.
+
+Recommended patterns:
+
+- `MCP_LOG_LEVEL`
+- `MCP_ARTIFACTS_ROOT`
+- `MCP_AI_ENABLED`
+- `MCP_AI_PROVIDER`
+- `MCP_AI_API_KEY`
+
+## Validation
+- Config MUST be validated on startup.
+- Unknown keys SHOULD be rejected (or surfaced as warnings) to prevent silent misconfiguration.
+
+## Operational Guidance
+
+### Local Development
+- Use JSON logs to simplify debugging.
+- Keep artifact manifests enabled.
+
+### CI
+- Force `ai.enabled=false` unless explicitly testing AI.
+- Use `--dry-run` flows to validate schemas and manifests.
+
+### Shared Team Environments
+- Enforce tool allowlists and path allowlists.
+- Keep secrets in environment variables managed by the CI/CD system.
+
+## Updating Configurations
+Implementations MAY provide:
+
+- `mcp.config get <key>`
+- `mcp.config set <key> <value>`
+- `mcp.reset_config`
 
 For troubleshooting issues, see `troubleshooting.md`.
-

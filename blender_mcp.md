@@ -1,65 +1,109 @@
 # Blender-MCP
 
 ## Overview
-Blender-MCP is a module within the Model Context Protocol (MCP) that enables AI-driven automation in Blender. It facilitates scene generation, asset creation, texture application, and seamless integration with Unreal Engine 5 (UE5).
+Blender-MCP defines how MCP automates Blender for:
 
----
+- scene generation and editing
+- material/texture workflows
+- export packaging for downstream ingestion (UE5)
 
-## **1. Features**
-### **1.1 Procedural Scene Generation**
-- Create complex scenes using natural language commands.
-- Example:
-  ```bash
-  mcp.generate_scene "A sci-fi spaceship interior with neon lighting."
-  ```
+This document is an integration specification: execution boundaries, transport, safety constraints, and artifact contracts.
 
-### **1.2 Asset Management & Texturing**
-- Add, modify, and export assets efficiently.
-- Example:
-  ```bash
-  mcp.add_object "chair" 2.5 3.0 0.0
-  mcp.generate_texture "chair" "leather upholstery"
-  ```
+## Scope
+Blender-MCP targets **editor-time automation** inside Blender, not runtime use.
 
-### **1.3 AI-Assisted Optimization**
-- Automates LOD generation for performance optimization.
-- Example:
-  ```bash
-  mcp.optimize_asset "building_model" --lod 3
-  ```
+Primary tools:
 
----
+- `mcp.generate_scene`
+- `mcp.add_object`
+- `mcp.generate_texture`
+- `mcp.export_asset`
 
-## **2. Installation & Setup**
-### **2.1 Prerequisites**
-- Blender 3.x or later.
-- Required add-ons enabled (`Node Wrangler`, `Blender Python API`).
-- Install dependencies:
-  ```bash
-  pip install numpy scipy pillow requests
-  ```
+## Integration Architecture
 
-### **2.2 Loading MCP in Blender**
-1. Open Blender.
-2. Navigate to `Edit` → `Preferences` → `Add-ons`.
-3. Enable the MCP plugin.
-4. Restart Blender to apply changes.
+### Add-on shape
+Blender-MCP is implemented as a Blender add-on that:
 
----
+- registers a small MCP endpoint (transport-specific)
+- exposes tool handlers that call Blender’s Python API
+- reports structured results and artifacts
 
-## **3. Exporting to Unreal Engine 5**
-### **3.1 Export Supported Formats**
-- `.fbx`, `.obj`, `.gltf` formats are supported.
-- Example:
-  ```bash
-  mcp.export_asset "tree_model" "fbx" "./exports/tree.fbx"
-  ```
+The add-on SHOULD run with least privilege and restrict file system operations to allowlisted paths.
 
-### **3.2 Asset Optimization Before Export**
-- Reduce polycount for better performance:
-  ```bash
-  mcp.optimize_asset "tree_model" --polycount 5000
-  ```
+### Transport
+The transport mechanism is implementation-defined. Recommended options:
 
-For more details on automation, refer to `automation.md`.
+- **Local stdio**: safest for agent-run “Blender as a subprocess”.
+- **Local HTTP/WebSocket**: suitable when Blender stays open and MCP connects to a running session.
 
+Security constraints:
+
+- default bind: `localhost` only
+- explicit opt-in for remote access
+
+## Execution Semantics
+
+### Target selection
+Every tool call MUST target a specific Blender session/context.
+
+### Determinism
+- Tools SHOULD accept `seed` for any non-deterministic generation.
+- Tool versions and seed MUST be recorded in the run manifest.
+
+### Dry-run
+Where feasible, tools SHOULD support `dry_run`:
+
+- validate parameters
+- report intended changes
+- avoid mutating Blender state
+
+## Safety & Permissions
+
+### File system
+Tools that write to disk (e.g., `mcp.export_asset`) MUST:
+
+- respect an allowlist of output directories
+- refuse overwrite unless explicitly enabled
+- emit an artifact manifest
+
+### Script execution
+Model-generated code MUST NOT be executed directly.
+
+If any dynamic scripting is supported, it MUST be behind strict policy gates and sandboxing.
+
+## Asset Pipeline Contract
+
+### Export formats
+Blender-MCP SHOULD support exporting to:
+
+- `fbx`
+- `gltf`
+- `obj`
+
+### Export manifest
+Every export MUST produce a companion manifest (see `workflow.md`). Minimum recommended fields:
+
+- export path
+- format
+- unit scale and axis conventions
+- object name/id
+- material slots and texture references
+- seed/provenance where applicable
+
+### Material/texture portability
+Exports SHOULD avoid fragile absolute paths.
+
+- prefer embedding textures when requested
+- otherwise emit stable relative references and include a copy strategy
+
+## Limitations (Expected)
+- Blender Python API operations can be slow for very large scenes.
+- Determinism depends on using stable seeds and avoiding time-based randomness.
+- Export fidelity varies by format; manifests are required to keep imports consistent.
+
+## Testing Strategy
+- schema validation tests for tool inputs
+- golden tests for manifests
+- deterministic tests for seeded generation (within tolerance)
+
+For more details on automation semantics, refer to `automation.md`.

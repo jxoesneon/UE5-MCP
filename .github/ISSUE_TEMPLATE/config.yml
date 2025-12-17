@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security issues
+    url: https://github.com/VedantRGosavi/UE5-MCP/security/policy
+    about: Please follow SECURITY.md and use private reporting channels for vulnerabilities.

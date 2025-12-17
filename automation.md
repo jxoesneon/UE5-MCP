@@ -1,73 +1,134 @@
 # MCP Automation
 
 ## Overview
-This document details how scripts are automated for scene generation and asset transfer between Blender and Unreal Engine 5 (UE5). MCP leverages AI-driven automation to enhance efficiency and reduce manual workload.
+This document defines MCP automation semantics: how tools execute, how work is batched, and how side effects are controlled.
 
----
+It complements:
 
-## **1. Automation in Blender**
-### **1.1 Scene Generation**
-#### Automated Process:
-1. User inputs a description: `mcp.generate_scene "A medieval village with cobblestone streets and torches."`
-2. AI processes the request and creates procedural geometry.
-3. Assets (e.g., houses, roads, lights) are placed with logical spatial relationships.
-4. Textures and materials are automatically applied.
+- `workflow.md` (end-to-end pipeline)
+- `architecture.md` (components and execution model)
+- `commands.md` / `api_reference.md` (tool surface and schemas)
 
-### **1.2 Asset Management**
-#### Automated Tasks:
-- **Texture Generation:** AI generates and applies textures.
-  ```bash
-  mcp.generate_texture "castle_wall" "weathered stone"
-  ```
-- **Batch Processing:** Multiple objects processed in parallel for efficiency.
-- **Export Optimization:** Ensures assets meet UE5’s performance requirements.
-  ```bash
-  mcp.export_asset "bridge_model" "fbx" "./exports/bridge.fbx"
-  ```
+## Automation Contracts
 
----
+### Determinism
+- Tools that involve randomness SHOULD accept a `seed`.
+- The seed and tool version MUST be recorded in the run manifest.
 
-## **2. Automation in Unreal Engine 5**
-### **2.1 Procedural Level Design**
-#### Automated Process:
-1. **Terrain Creation:**
-   ```bash
-   mcp.generate_terrain 2000 2000 "high"
-   ```
-2. **Foliage & Object Placement:**
-   ```bash
-   mcp.populate_level "trees" 1000
-   ```
-3. **AI-Driven Layout Refinements:** AI adjusts placements for performance and aesthetics.
+### Idempotency
+- Tools SHOULD be idempotent when feasible.
+- If a tool is not idempotent, it MUST:
+  - declare side effects
+  - support `dry_run` where meaningful
+  - emit sufficient provenance to understand what changed
 
-### **2.2 Blueprint Automation**
-#### Automated Tasks:
-- **Generating Game Logic:**
-  ```bash
-  mcp.generate_blueprint "Create a trigger that opens a door when the player is near."
-  ```
-- **Debugging & Performance Optimization:**
-  ```bash
-  mcp.profile_performance "desert_map"
-  ```
+### Safety Gates
+- Destructive behavior (overwrite/delete/import that replaces assets) MUST be explicit.
+- Policy MUST be enforced (tool allowlist and path allowlist).
 
----
+### Artifact & Provenance Requirements
+Every run MUST generate:
 
-## **3. AI-Driven Enhancements**
-### **3.1 Predictive Asset Placement**
-- AI suggests optimal placements based on game world data.
-- Example: Placing torches along pathways in a medieval setting.
+- a run manifest with `run_id`
+- tool outputs in structured form
+- artifact manifests for any exported/generated files
 
-### **3.2 Automated Testing**
-- AI runs simulations to test level design and gameplay logic.
-- Detects performance bottlenecks and suggests improvements.
+AI-assisted steps MUST also record:
 
----
+- provider + model identifier
+- prompt template hash
+- budget usage summary
 
-## **4. Best Practices**
-- Use automation for repetitive tasks to speed up development.
-- Leverage AI to refine asset placement and game logic.
-- Optimize exported assets to maintain high performance in UE5.
+## Batching and Concurrency
+
+### Batching
+Tools MAY batch operations to reduce overhead:
+
+- batch object placement
+- batch material generation
+- batch exports
+
+Batching MUST preserve debuggability:
+
+- per-item success/failure reporting
+- stable ordering
+
+### Concurrency
+Concurrency is constrained by target runtimes:
+
+- Blender and UE5 editor state are shared mutable resources.
+- Mutating operations SHOULD be serialized per target.
+- Read-only operations MAY be concurrent.
+
+## Blender Automation
+
+### Scene Generation (`mcp.generate_scene`)
+Automation goals:
+
+- produce a coherent object graph
+- keep modifications attributable to a tool call
+- support `dry_run` plans prior to applying
+
+Recommended invariants:
+
+- object naming conventions
+- deterministic seed usage
+
+### Texture/Material Automation (`mcp.generate_texture`)
+Automation goals:
+
+- deterministic mapping of textures/material slots
+- explicit reporting of created materials and dependencies
+
+### Export Automation (`mcp.export_asset`)
+Automation goals:
+
+- produce both the exported file and an export manifest
+- preserve transform/material metadata
+- support explicit overwrite controls
+
+## UE5 Automation
+
+### Terrain Automation (`mcp.generate_terrain`)
+Automation goals:
+
+- deterministic terrain creation via seed
+- explicit parameters (size, detail)
+- integration with PCG where applicable
+
+### Population Automation (`mcp.populate_level`)
+Automation goals:
+
+- deterministic placement and stable ordering
+- performance budgeting (max instances, density caps)
+
+### Blueprint Automation (`mcp.generate_blueprint`)
+Automation goals:
+
+- blueprint edits that compile
+- structured change summary (what assets, what graphs)
+
+## Rollback & Recovery
+
+### Checkpointing
+High-impact operations SHOULD support checkpointing:
+
+- Blender: save file snapshot prior to apply
+- UE5: integrate with version control or changelist workflows
+
+### Partial Failure
+If a batch operation fails:
+
+- MCP MUST return a structured error with partial results
+- MCP SHOULD produce artifacts for successful sub-operations
+
+## Performance Budgets
+Tools SHOULD support explicit budgets:
+
+- max instances
+- max polycount
+- timeouts
+
+Tools MUST warn when budgets are exceeded and SHOULD refuse to apply changes if policy requires it.
 
 For configuration options, refer to `configurations.md`.
-

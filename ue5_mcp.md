@@ -1,70 +1,137 @@
 # Unreal Engine 5-MCP
 
 ## Overview
-UE5-MCP is a module within the Model Context Protocol (MCP) that facilitates AI-assisted automation in Unreal Engine 5. It enhances level design, asset integration, Blueprint automation, and performance optimization.
+UE5-MCP defines how MCP automates Unreal Engine 5 for:
 
----
+- terrain and PCG-driven level generation
+- asset ingestion and placement
+- Blueprint creation/modification
+- profiling and optimization reporting
 
-## **1. Features**
-### **1.1 Procedural Level Design**
-- Generate environments using natural language commands.
-- Example:
-  ```bash
-  mcp.generate_terrain 2000 2000 "high"
-  ```
+This document is an integration specification: where MCP connects, what the contracts are, and how safety/determinism are enforced.
 
-### **1.2 AI-Assisted Asset Population**
-- Automatically places objects and optimizes layouts.
-- Example:
-  ```bash
-  mcp.populate_level "rocks" 1000
-  ```
+## Scope and Boundary
+UE5-MCP targets **editor-time automation**. The initial assumption is that MCP operates against a running UE5 Editor instance.
 
-### **1.3 Blueprint Automation**
-- Creates and modifies gameplay logic automatically.
-- Example:
-  ```bash
-  mcp.generate_blueprint "A door that opens when the player interacts."
-  ```
+Non-goals:
 
-### **1.4 Performance Profiling**
-- Detects performance bottlenecks and suggests optimizations.
-- Example:
-  ```bash
-  mcp.profile_performance "desert_map"
-  ```
+- packaged game runtime control (initially)
+- giving an AI agent unrestricted access to modify arbitrary project files
 
----
+Primary tools:
 
-## **2. Installation & Setup**
-### **2.1 Prerequisites**
-- Unreal Engine 5.1 or later.
-- Enable required UE5 plugins:
-  - `Python Editor Script Plugin`
-  - `Procedural Content Generation (PCG) Framework`
+- `mcp.generate_terrain`
+- `mcp.populate_level`
+- `mcp.generate_blueprint`
+- `mcp.profile_performance`
 
-### **2.2 Installing MCP in UE5**
-1. Open Unreal Engine 5.
-2. Navigate to `Edit` → `Plugins`.
-3. Enable MCP-related plugins.
-4. Restart UE5 to apply changes.
+## Integration Architecture
 
----
+### Execution backends
+UE5-MCP can execute through one or more backends:
 
-## **3. Blender Integration**
-### **3.1 Importing Blender Assets**
-- Supports `.fbx`, `.obj`, `.gltf` formats.
-- Example:
-  ```bash
-  mcp.import_asset "./exports/tree.fbx"
-  ```
+- **UE Python Editor Scripting** (preferred): direct editor automation
+- **Remote Control API (HTTP/WebSocket)** (optional): remote property/function invocation
+- **UnrealCV** (optional): legacy/third-party transport for certain workflows
 
-### **3.2 Automated Texture & Material Assignments**
-- MCP assigns materials based on asset metadata.
-- Example:
-  ```bash
-  mcp.apply_material "tree_model" "bark_texture"
-  ```
+Backends MUST normalize results into the MCP result envelope (see `api_reference.md`).
 
-For more details, refer to `blender_mcp.md` and `automation.md`.
+### Transport
+MCP connects to UE5 via an implementation-defined transport.
 
+Recommended constraints:
+
+- local-only by default
+- explicit opt-in for remote access
+- authenticated endpoints for non-local usage
+
+## Required UE5 Plugins
+- `Python Editor Script Plugin`
+- `Procedural Content Generation (PCG) Framework`
+
+Optional plugins:
+
+- `Remote Control` (if using Remote Control API)
+- `UnrealCV` (if using UnrealCV)
+
+## Execution Semantics
+
+### Target selection
+Tool calls MUST target a specific UE5 project/editor context.
+
+Recommended targeting fields (conceptual):
+
+- project path
+- map/level name
+- optional world partition or sub-level selection
+
+### Determinism
+- Terrain/population tools SHOULD accept a `seed`.
+- Placement MUST be stable given identical inputs (seed + tool version + asset set).
+
+### Dry-run
+Tools SHOULD support `dry_run`:
+
+- validate parameters
+- compute an execution plan (e.g., instance counts, asset sets)
+- avoid mutating the project
+
+## Tool Contracts
+
+### Terrain Generation (`mcp.generate_terrain`)
+Contract:
+
+- declares size/detail settings
+- integrates with PCG where applicable
+- records seed and parameters
+
+Expected outputs:
+
+- created terrain asset references
+- parameters used
+
+### Population (`mcp.populate_level`)
+Contract:
+
+- deterministic placement ordering
+- budgeting support (max instances)
+- emits warnings when budgets are exceeded
+
+Expected outputs:
+
+- placements created
+- summary statistics (counts, bounds)
+
+### Blueprint Automation (`mcp.generate_blueprint`)
+Contract:
+
+- outputs MUST compile (or return explicit compile errors)
+- changes MUST be summarized (assets/graphs affected)
+- high-impact changes SHOULD be gated behind review workflows
+
+### Profiling (`mcp.profile_performance`)
+Contract:
+
+- produces a report artifact
+- categorizes recommendations by risk/impact
+
+## Asset Ingestion from Blender
+UE5-MCP SHOULD support ingestion of Blender exports by consuming export manifests.
+
+Even if a dedicated `mcp.import_asset` tool is not yet implemented, the import process MUST be standardized:
+
+- read export manifest
+- enforce scale/axis conventions
+- map materials deterministically
+
+## Safety & Project Hygiene
+- Prefer operating in a dedicated sandbox map until changes are validated.
+- Integrate with source control workflows for rollback.
+- Never overwrite assets unless explicitly configured and confirmed.
+
+## Limitations (Expected)
+- Blueprint graph editing APIs vary by engine version.
+- Some automation requires editor focus and can be disrupted by modal dialogs.
+- Profiling results depend on project settings and hardware; reports must include metadata.
+
+For more details, refer to `automation.md` and `workflow.md`.

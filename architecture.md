@@ -164,17 +164,17 @@ MCP must assume Blender and UE5 sessions have shared mutable state.
 ## Reference Execution Flows
 
 ### Blender Asset Pipeline
-1. `generate_scene` produces a plan or direct scene operations.
-2. `add_object` mutates scene state.
-3. `generate_texture` produces textures/material bindings.
-4. `export_asset` emits an artifact with a manifest (format, scale, axes, materials).
+1. `mcp.generate_scene` produces a plan or direct scene operations.
+2. `mcp.add_object` mutates scene state.
+3. `mcp.generate_texture` produces textures/material bindings.
+4. `mcp.export_asset` emits an artifact with a manifest (format, scale, axes, materials).
 
 ### UE5 Level Pipeline
-1. `import_asset` ingests exported artifacts.
-2. `generate_terrain` produces terrain/heightmap/PCG graphs.
-3. `populate_level` instantiates assets with deterministic seeding.
-4. `generate_blueprint` produces Blueprint edits with validation.
-5. `profile_performance` produces a report artifact.
+1. `mcp.import_asset` ingests exported artifacts.
+2. `mcp.generate_terrain` produces terrain/heightmap/PCG graphs.
+3. `mcp.populate_level` instantiates assets with deterministic seeding.
+4. `mcp.generate_blueprint` produces Blueprint edits with validation.
+5. `mcp.profile_performance` produces a report artifact.
 
 ## Extensibility
 To add a tool:

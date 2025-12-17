@@ -60,6 +60,16 @@ Errors MUST be structured and include a stable `code`.
 }
 ```
 
+Recommended error codes:
+
+- `VALIDATION_ERROR`
+- `POLICY_DENIED`
+- `TARGET_UNAVAILABLE`
+- `TIMEOUT`
+- `DEPENDENCY_MISSING`
+- `IO_ERROR`
+- `INTERNAL_ERROR`
+
 ## 1. General MCP Commands
 
 ### `mcp.list_commands`
@@ -170,6 +180,25 @@ mcp.export_asset "car_model" "fbx" "./exports/car_model.fbx"
 ```
 
 ## 3. Unreal Engine 5-MCP Commands
+
+### `mcp.import_asset "manifest_path"`
+- **Purpose**: Import an exported asset into UE5 by consuming a Blender export manifest.
+- **Inputs**:
+  - `manifest_path` (string)
+- **Optional flags (recommended)**:
+  - `--dry-run | --apply`
+  - `--overwrite` (MUST be explicit)
+- **Outputs**:
+  - imported asset references (paths/identifiers)
+  - a normalized import summary
+- **Side effects**:
+  - writes assets into the UE project when executed with `--apply`
+
+Example:
+
+```bash
+mcp.import_asset "./exports/bridge.export_manifest.json" --dry-run
+```
 
 ### `mcp.generate_terrain width height detail_level`
 - **Purpose**: Generate procedural terrain in UE5.

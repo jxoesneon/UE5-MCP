@@ -47,7 +47,7 @@ Until the implementation is available, you can still use the docs to plan integr
 1. **Install prerequisites**
    - Blender 3.x+
    - UE 5.1+
-   - Python 3.x
+   - Python 3.11+
 
 2. **Enable UE plugins**
    - `Python Editor Script Plugin`
@@ -80,12 +80,10 @@ See `configurations.md` and `ai_integration.md`.
 - `configurations.md`: config schema, precedence, secrets
 - `dependencies.md`: reproducible dependencies and toolchain requirements
 - `troubleshooting.md`: diagnostic playbooks
+- `ROADMAP.md`: end-to-end implementation roadmap (phases, acceptance criteria, risks)
 
 ## Roadmap (Implementation)
-- **MVP**: command registry + config loader + structured logging + stub Blender/UE adapters.
-- **UE5 editor integration**: Python/PCG automation + Blueprint generation scaffolding.
-- **Blender integration**: add-on skeleton + deterministic export pipeline.
-- **AI provider layer**: prompt templates, budget controls, eval harness, safety policies.
+See `ROADMAP.md` for a phased, end-to-end implementation plan with acceptance criteria, risks, and spec mappings.
 
 ## Contributing
 See `CONTRIBUTING.md`.

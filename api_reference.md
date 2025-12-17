@@ -118,6 +118,18 @@ Recommended error codes:
 
 ## 2. UE5-MCP Tools
 
+### `mcp.import_asset`
+- **Purpose**: Import assets into UE5 by consuming an export manifest produced by `mcp.export_asset`.
+- **Inputs**:
+  - `manifest_path` (string)
+  - `dry_run` (boolean, optional)
+  - `overwrite` (boolean, optional)
+- **Side effects**: Writes assets into the UE project when `dry_run=false`.
+- **Result** (conceptual):
+  - `imported_assets[]`
+  - `import_summary`
+  - `warnings[]`
+
 ### `mcp.generate_terrain`
 - **Purpose**: Generate terrain using UE5 Editor scripting/PCG.
 - **Inputs**:
@@ -161,6 +173,16 @@ Recommended error codes:
 - **Side effects**: None expected (reads project state).
 - **Result** (conceptual):
   - `report_artifact`
+
+### `mcp.optimize_level`
+- **Purpose**: Apply safe optimizations guided by explicit budgets.
+- **Inputs**:
+  - `dry_run` (boolean, optional)
+  - `budgets` (object, optional)
+- **Side effects**: Mutates UE5 project state when `dry_run=false`.
+- **Result** (conceptual):
+  - `changes_applied[]`
+  - `warnings[]`
 
 ### `mcp.debug_blueprint`
 - **Purpose**: Diagnose common Blueprint failures.

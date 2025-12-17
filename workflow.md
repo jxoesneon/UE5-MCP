@@ -105,7 +105,9 @@ Failure modes:
 - incompatible format settings for UE import
 
 ### Stage 3: Import into UE5 (Ingestion)
-This stage is conceptually required even if the initial command surface does not yet expose `mcp.import_asset`.
+Primary tool:
+
+- `mcp.import_asset`
 
 Contract:
 

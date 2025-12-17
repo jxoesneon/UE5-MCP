@@ -20,6 +20,7 @@ Non-goals:
 
 Primary tools:
 
+- `mcp.import_asset`
 - `mcp.generate_terrain`
 - `mcp.populate_level`
 - `mcp.generate_blueprint`
@@ -118,7 +119,7 @@ Contract:
 ## Asset Ingestion from Blender
 UE5-MCP SHOULD support ingestion of Blender exports by consuming export manifests.
 
-Even if a dedicated `mcp.import_asset` tool is not yet implemented, the import process MUST be standardized:
+`mcp.import_asset` is the recommended ingestion entry point. Early implementations MAY support it in `dry_run`-only mode first, but the import process MUST be standardized:
 
 - read export manifest
 - enforce scale/axis conventions

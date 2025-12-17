@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a defect or unexpected behavior
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please include enough detail to reproduce. For security-sensitive issues, do not file publicly; use SECURITY.md.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the observed behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: Describe expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal reproduction steps.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Provide relevant versions.
+      value: |
+        OS:
+        Python:
+        UE version (if applicable):
+        Blender version (if applicable):
+        Transport (stdio/http/tcp):
+    validations:
+      required: false
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: Logs / Artifacts
+      description: Paste or link run manifests/logs if available.
+    validations:
+      required: false

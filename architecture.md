@@ -1,92 +1,190 @@
 # MCP Architecture
 
 ## Overview
-The Model Context Protocol (MCP) is structured to integrate AI-driven automation into both Blender and Unreal Engine 5 (UE5), enabling procedural generation, asset management, and gameplay programming assistance. The architecture ensures a modular, extensible, and high-performance system for developers.
+MCP (Model Context Protocol) is an **editor-time automation system** that turns user intent into deterministic, inspectable operations across Blender and Unreal Engine 5 (UE5). It provides:
 
-## High-Level Design
-MCP consists of multiple core components:
+- A **stable tool surface** (commands + APIs) for scene generation, asset transfer, and in-editor automation.
+- A **protocol** for representing tool invocations, plans, and execution results.
+- A set of **adapters** that implement those tool invocations against Blender, UE5, and optional AI providers.
 
-### 1. **Core Processing Layer**
-- Handles AI interactions for procedural generation and automation.
-- Communicates with external AI models (e.g., Claude, GPT, Stable Diffusion) for intelligent asset creation.
-- Manages logic for interpreting natural language instructions into executable tasks.
+This document defines the architecture as an implementable contract: component boundaries, data flow, security posture, and operational behavior.
 
-### 2. **Blender-MCP Module**
-- Integrates with Blender's API to automate scene creation, asset modification, and material generation.
-- Supports Python scripting for automation of procedural modeling and texture synthesis.
-- Facilitates direct asset transfers to UE5 via standardized formats.
+## Goals
+- **Determinism by default**: executions are reproducible, inspectable, and diffable.
+- **Safety-first automation**: destructive actions require explicit opt-in.
+- **Provider-agnostic AI**: AI usage is optional, bounded, and replaceable.
+- **Editor-time focus**: the primary target is authoring workflows, not runtime gameplay.
+- **Extensibility**: new tools/backends can be added without reworking core infrastructure.
 
-### 3. **UE5-MCP Module**
-- Works within Unreal Engine 5 to streamline level design, Blueprint automation, and debugging.
-- Uses UE5's Python API and Blueprints to modify in-engine assets and gameplay logic.
-- Implements AI-driven tools for terrain generation, foliage placement, and environment structuring.
+## Non-Goals
+- Shipping a one-shot “prompt builds an entire game” solution.
+- Shipping a runtime dependency for packaged UE games (initially).
+- Hard-coding a specific AI provider or model.
 
-### 4. **Middleware Communication Layer**
-- Bridges Blender and UE5, ensuring seamless asset migration.
-- Manages API authentication and context tracking across multiple platforms.
-- Provides an abstraction layer for AI interactions and script automation.
+## Architectural Boundary
+MCP is a control-plane system. It orchestrates tools that execute inside external runtimes:
 
-### 5. **Data Storage & Configuration Management**
-- Stores metadata, user settings, and procedural generation templates.
-- Supports configuration presets for different types of workflows.
+- **Blender runtime** (Python API, add-on context)
+- **UE5 Editor runtime** (Python Editor Script Plugin, PCG, optional UnrealCV)
+- **AI providers** (LLM + image/texture generation) used as planning/assistive components
 
-## Interaction Flow
-1. **User Inputs Command** → MCP interprets and processes the command.
-2. **AI Generation & Processing** → AI models generate assets, scripts, or modifications.
-3. **Execution in Blender or UE5** → The processed results are applied to the active scene.
-4. **User Iteration & Refinement** → Users refine outputs with additional instructions or modifications.
+MCP does not replace Blender/UE5; it produces operations that those environments execute.
 
-## Extensibility & Future Enhancements
-- **AI Model Enhancements**: Future iterations will support fine-tuned AI models for domain-specific tasks.
-- **Expanded UE5 Integration**: More complex Blueprint automation and performance profiling features.
-- **Cloud-Based Processing**: Enabling remote AI processing for large-scale asset generation.
+## Core Concepts
+- **Tool**: a named capability with a validated input schema and a structured output.
+- **Command**: user-facing alias for a tool (CLI/agent-facing entry point).
+- **Plan**: an ordered set of tool calls produced from intent (may be human-reviewed).
+- **Run**: a single execution instance with an immutable `run_id`, logs, and artifacts.
+- **Artifact**: generated output (files, reports, exported assets) with metadata and provenance.
+- **Target**: the execution environment (Blender session, UE5 project/editor instance).
 
-## Recent Developments and Enhancements
+## High-Level Components
 
-1. **AI-Driven Scene Generation**:
-   - Enhanced integration with AI models like Claude, GPT, and Stable Diffusion for complex scene generation tasks in Blender and UE5, including text-to-scene conversion and automated scene composition.
+### 1) MCP Gateway (Transport Layer)
+Responsibilities:
 
-2. **Middleware Communication Layer**:
-   - Includes a JSON-based command protocol and TCP server implementation for remote control of Unreal Engine, enhancing flexibility and control over scene manipulation and asset management.
+- Accept requests from a CLI, IDE agent, or remote client.
+- Perform request framing, streaming, and cancellation.
+- Attach trace context (`trace_id`, `run_id`) and enforce timeouts.
 
-3. **Expanded Integration with Other Platforms**:
-   - MCP now integrates with platforms like Unity and Ableton, providing AI-driven automation capabilities such as natural language interaction for scene creation and MIDI/audio track manipulation.
+Transport options (implementation-dependent):
 
-4. **Accelerated Development Cycles**:
-   - Enables faster development cycles by allowing natural language interaction for testing and feature implementation, reducing the need for manual scripting and UI navigation.
+- **stdio** for local agent/server integration.
+- **HTTP/WebSocket** for remote clients and streaming events.
+- **TCP** only as a legacy/compat option; prefer authenticated, structured transports.
 
-5. **Enhanced Collaboration**:
-   - Supports new forms of collaboration between humans and AI, allowing designers, developers, and content creators to work more efficiently by leveraging AI for rapid iteration and feature implementation.
+### 2) Command Registry (Tool Surface)
+Responsibilities:
 
-6. **Future Enhancements**:
-   - Future iterations will include more complex Blueprint automation, performance profiling features, and cloud-based processing for large-scale asset generation. Focus on developing standards for MCP security and authentication.
+- Provide canonical tool definitions (name, description, JSON schema, examples).
+- Provide `mcp.list_commands` and `mcp.help` views.
+- Enforce stable naming, versioning, and deprecation policies.
 
-7. **MCP-First Development**:
-   - The concept of MCP-first development is gaining traction, where applications are built with MCP servers from the start, enabling seamless AI interaction and democratizing software development by allowing users to perform complex tasks through natural language.
+### 3) Policy & Security Layer
+Responsibilities:
 
-8. **Meta AI Agents**:
-   - MCP's architecture is particularly valuable for "AI Agent" development, allowing seamless integration with various technology stacks, enabling the creation of Meta AI Agents and Self-Evolving AI Agents.
+- Authentication for remote transports (tokens/keys) where applicable.
+- Authorization policies (allowlist tools, file paths, project roots).
+- Safety gates for destructive operations (delete/overwrite/import side-effects).
+- Secret handling (config/env only; never logs).
 
-This architecture ensures flexibility, scalability, and efficiency in integrating AI-assisted workflows into Blender and Unreal Engine 5.
+### 4) Planner (Optional AI + Heuristics)
+Responsibilities:
 
-## Advanced AI Model Integration
-- MCP's architecture supports advanced AI model integration, allowing seamless interaction with large language models (LLMs) and other AI tools for enhanced asset creation and automation.
+- Convert ambiguous intent into a structured plan (tool calls).
+- Ask clarifying questions when inputs are underspecified.
+- Produce bounded outputs (token/cost/time budgets).
 
-## Cross-Platform Compatibility
-- MCP is designed to be cross-platform, enabling integration with various software environments beyond Blender and UE5, such as Unity and Ableton, to provide a unified AI-driven workflow.
+Planner outputs are treated as **untrusted suggestions** until validated and policy-checked.
 
-## Real-Time Collaboration
-- The protocol facilitates real-time collaboration between AI and human users, allowing for dynamic adjustments and iterative design processes in game development and asset creation.
+### 5) Executor (Deterministic Runtime)
+Responsibilities:
 
-## Security and Authentication
-- MCP includes robust security and authentication mechanisms to ensure safe and secure interactions between AI models and external tools, protecting user data and intellectual property.
+- Validate inputs against schemas.
+- Execute tool calls against adapters.
+- Manage retries for transient failures (network/IO) with backoff.
+- Emit events, logs, and artifacts.
 
-## Scalability and Performance Optimization
-- The architecture is optimized for scalability, allowing it to handle large-scale projects and complex workflows efficiently, with performance profiling features to ensure optimal resource utilization.
+Execution model:
 
-## Community and Ecosystem Development
-- MCP fosters a growing community and ecosystem, encouraging contributions and collaborations from developers worldwide to enhance its capabilities and expand its applications.
+- **Preflight**: validate + compute a diff/plan where supported.
+- **Apply**: execute with locking on per-target resources.
+- **Post-validate**: sanity checks and artifact registration.
 
-## Future Prospects
-- The future of MCP includes the development of self-evolving AI agents and the exploration of new AI-driven paradigms in software development, pushing the boundaries of what AI can achieve in creative industries.
+### 6) Adapters (Blender / UE5 / AI)
+Responsibilities:
 
+- Provide the concrete implementation of tools.
+- Translate tool inputs into runtime-specific API calls.
+- Normalize outputs/errors into MCP’s structured result model.
+
+Adapter categories:
+
+- **Blender adapter**: scene operations, object placement, export.
+- **UE5 adapter**: terrain/PCG ops, import, Blueprint edits, profiling.
+- **AI adapter**: text planning, texture generation, summarization, critique.
+
+### 7) Storage & Artifacts
+Responsibilities:
+
+- Store execution logs and structured results.
+- Store exported/generated artifacts and their provenance.
+- Support cache keys for deterministic re-runs (where safe).
+
+At minimum: local filesystem artifact root with manifest files. Advanced: object storage + DB.
+
+### 8) Observability
+Responsibilities:
+
+- **Structured logs** per tool call and per run.
+- **Metrics** (latency, error rates, tool usage, budget usage).
+- **Tracing** across planner → executor → adapters.
+
+Implementation guidance: OpenTelemetry-compatible tracing and JSON logs.
+
+## Protocol & Versioning
+MCP requests/responses MUST be versioned.
+
+- **Protocol version**: semantic versioning (`MAJOR.MINOR.PATCH`).
+- **Tool schema versioning**: tool definitions are versioned and can be deprecated.
+
+Minimum envelope fields (conceptual):
+
+- `protocol_version`
+- `request_id` (idempotency key)
+- `run_id` (execution instance)
+- `tool_name`
+- `params` (validated against tool schema)
+- `trace_id` / `span_id`
+
+### Idempotency & Reproducibility
+- Tools SHOULD be idempotent when feasible.
+- Non-idempotent tools MUST declare side effects and support `dry_run` where possible.
+- All runs MUST record: tool inputs, tool versions, config snapshot hash, and artifact hashes.
+
+### Streaming & Cancellation
+Long-running tools (terrain generation, imports, AI calls) SHOULD emit progress events and accept cancellation signals.
+
+## Security Model
+Security is enforced at **multiple layers**:
+
+- **Secrets**: provided via config/env; redacted from logs.
+- **Authorization**: tool allowlist, path allowlist, and project-root constraints.
+- **Sandboxing**: adapters must avoid executing arbitrary code paths from model output.
+- **Prompt injection resistance**: treat external content as data; separate instructions from context.
+- **Auditability**: immutable audit logs per run with timestamps and actor identity (where applicable).
+
+## Concurrency & Target Isolation
+MCP must assume Blender and UE5 sessions have shared mutable state.
+
+- Use per-target locks (e.g., one executor per Blender session / UE project).
+- Queue tool calls that mutate the same scene/project.
+- Prefer explicit “open project / select level” targeting instead of implicit globals.
+
+## Reference Execution Flows
+
+### Blender Asset Pipeline
+1. `generate_scene` produces a plan or direct scene operations.
+2. `add_object` mutates scene state.
+3. `generate_texture` produces textures/material bindings.
+4. `export_asset` emits an artifact with a manifest (format, scale, axes, materials).
+
+### UE5 Level Pipeline
+1. `import_asset` ingests exported artifacts.
+2. `generate_terrain` produces terrain/heightmap/PCG graphs.
+3. `populate_level` instantiates assets with deterministic seeding.
+4. `generate_blueprint` produces Blueprint edits with validation.
+5. `profile_performance` produces a report artifact.
+
+## Extensibility
+To add a tool:
+
+- Define a schema + examples.
+- Implement an adapter method.
+- Add policy defaults (is it destructive? does it touch the filesystem?).
+- Add tests (schema validation + golden outputs for deterministic mode).
+
+## Operational Profiles
+- **Local single-user**: stdio transport, local artifacts, minimal auth.
+- **Team shared**: HTTP/WebSocket gateway, central artifact store, role-based policies.
+- **CI validation**: run tool plans in `dry_run` and validate schemas, manifests, and deterministic outputs.

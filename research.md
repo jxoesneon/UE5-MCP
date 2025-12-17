@@ -1,11 +1,69 @@
-# Integrating MCP Architecture with Unreal Engine 5
+# Research Dossier (UE5-MCP)
 
-## Introduction and MCP-UE5 Overview  
+This document is a **research dossier** for the UE5-MCP specification set. It organizes exploratory notes into:
+
+- research questions and hypotheses
+- design constraints and decisions
+- experiment backlog and evaluation criteria
+- open questions
+
+This document is **not** the normative contract. The normative contracts are the project specs (e.g., `architecture.md`, `commands.md`, `api_reference.md`, `configurations.md`).
+
+## Scope
+- **In scope**: UE5 editor-time automation via UE Python Editor Scripting, Remote Control API, and/or a dedicated UE plugin boundary.
+- **Out of scope**: shipping runtime gameplay systems; internet-exposed automation without strong auth/policy.
+
+## Research Questions
+- What is the lowest-risk UE5 control-plane integration that still enables meaningful automation?
+- Which UE5 subsystems are *practically* automatable via Python/Remote Control today (PCG, Landscape, Asset Registry, Blueprints)?
+- What data must be returned to the agent to enable iterative, safe planning (scene graph, asset queries, diff previews, profiling)?
+- What is the right boundary between “tooling commands” and “arbitrary Python execution” given safety goals?
+
+## Hypotheses (to validate)
+- A minimal command set + strong contracts (schemas, errors, idempotency) outperforms “general Python execution” for reliability.
+- Remote Control API is suitable for *read/inspect + limited writes*, while heavy edits may require UE Python or a plugin.
+- Determinism is achievable for editor automation when plans are artifact-driven and side effects are localized and audited.
+
+## Constraints and Non-Negotiables
+- **Safety-first**: destructive actions must be gated by policy and/or explicit confirmation.
+- **Idempotency**: commands should support replay/repair via stable identifiers and run manifests.
+- **Auditability**: every run must emit structured artifacts (inputs, plan, steps, outputs, diffs).
+
+## Decision Log (initial)
+- Prefer **editor-time** automation paths over runtime features.
+- Prefer **versioned schemas** over ad-hoc JSON.
+- Prefer **tool-specific commands** over arbitrary execution; allow escape hatches only under strict policy.
+
+## Experiment Backlog (implementation-agnostic)
+- Validate minimal UE5 transport options:
+  - stdio bridge (local-only)
+  - Remote Control API (HTTP/WebSocket)
+  - TCP JSON server inside a plugin
+- Prototype “read-only” introspection commands:
+  - list actors, selection, transforms
+  - query assets via Asset Registry
+- Prototype “safe write” commands:
+  - spawn actor from known assets
+  - tag/label objects and create manifests
+- Profiling + observability experiment:
+  - collect metrics (time, steps, failures)
+  - validate structured error taxonomy
+
+## Open Questions
+- What is the minimum viable UE plugin surface needed for production-grade auth/policy?
+- How should Blueprint generation be represented (graph diffs, templates, or codegen into C++/Python)?
+- How should we sandbox “execute python” semantics (whitelists, environment isolation, dry-run)?
+
+## Appendix A: Legacy Narrative Notes (retained for provenance)
+
+### Integrating MCP Architecture with Unreal Engine 5
+
+#### Introduction and MCP-UE5 Overview  
 The **Model Context Protocol (MCP)** is a framework for connecting AI agents to software applications, allowing natural language commands to drive complex operations ([MCP-First Development: Building AI-Ready Applications in 2025 | Medium](https://medium.com/@vrknetha/the-mcp-first-revolution-why-your-next-application-should-start-with-a-model-context-protocol-9b3d1e973e42#:~:text=The%20Model%20Context%20Protocol%20is,applications%2C%20allowing%20the%20AI%20to)). In the context of **Unreal Engine 5 (UE5)**, integrating MCP means enabling AI models (like GPT-4 or Claude) to **control the UE5 editor and runtime via natural language** – for example, generating levels, manipulating objects, or even writing Blueprint scripts on command. The MCP architecture for UE5 typically involves an AI agent communicating through a specialized MCP server or plugin embedded in Unreal. This server translates high-level requests into UE5 API calls and returns results back to the AI. The goal is to streamline **AI-driven procedural generation, Blueprint automation, real-time scene editing, and asset management** in UE5. UE5-MCP designs emphasize modularity and performance so that developers can safely offload creative or repetitive tasks to AI ([UE5-MCP/architecture.md at main · VedantRGosavi/UE5-MCP · GitHub](https://github.com/VedantRGosavi/UE5-MCP/blob/main/architecture.md#:~:text=,foliage%20placement%2C%20and%20environment%20structuring)). By focusing on Unreal-specific workflows (and excluding Blender/Unity in this discussion), we can explore how UE5’s tools – Python scripting, Blueprints, and remote control interfaces – work in tandem with MCP to realize an AI-assisted content creation pipeline.
 
  ([image]()) *Example architecture diagram showing how an AI agent interacts with Unreal Engine 5 through an MCP server/plugin. The AI sends natural-language commands (e.g. “create a blue cube at position X”) which the MCP layer parses into Unreal API calls (via Python scripting or remote control protocols). The engine executes those calls – spawning actors, setting properties, running Blueprint logic – and the MCP server then returns any results or confirmations back to the AI agent. This loop enables real-time scene manipulation and content generation via natural language.*  
 
-## UE5 Automation Tools for MCP Integration  
+### UE5 Automation Tools for MCP Integration  
 **Unreal Engine 5 provides several automation interfaces** that MCP servers can leverage to control the editor: 
 
 - **Python Scripting API:** UE5 has a built-in Python API for editor scripting, which allows executing almost any editor action programmatically. Python scripts can call all Blueprint-exposed functions and even some C++-only functions (like `UObject::Modify`) ([Automate everything you can in Unreal Engine! You will thank me later | by Urszula "Ula" Kustra | Medium](https://ukustra.medium.com/automate-everything-you-can-in-unreal-engine-you-will-thank-me-later-b9f8824753b9#:~:text=scripting%20the%20editor%20as%20well,several%20advantages%20to%20using%20it)). For example, using Python you can spawn actors into the level, import assets, or modify object properties in bulk. A simple Python call to spawn an actor might look like:  

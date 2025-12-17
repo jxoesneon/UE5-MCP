@@ -1,58 +1,100 @@
 # Contributing to MCP
 
-Thank you for your interest in contributing to the Model Context Protocol (MCP) project! We welcome contributions that help improve the MCP's functionality, performance, and usability.
+This repository is a **specification-first** project for an MCP-driven automation system spanning Unreal Engine 5 and Blender.
 
-## How to Contribute
-### 1. Reporting Issues
-If you encounter a bug, performance issue, or have a feature request, please submit an issue in our GitHub repository:
-1. Navigate to the [Issues](https://github.com/your-repo/MCP/issues) tab.
-2. Click "New Issue" and provide a clear and descriptive title.
-3. Include detailed information such as reproduction steps, expected behavior, and screenshots if applicable.
+Contributions are welcome, but we use a strict “contract-first” workflow:
 
-### 2. Forking & Creating Pull Requests
-1. **Fork the Repository**: Click the "Fork" button on the MCP GitHub page.
-2. **Clone Your Fork**:
-   ```bash
-   git clone https://github.com/your-username/MCP.git
-   cd MCP
-   ```
-3. **Create a Feature Branch**:
-   ```bash
-   git checkout -b feature-branch-name
-   ```
-4. **Make Your Changes**:
-   - Follow coding best practices.
-   - Test your changes before committing.
-5. **Commit & Push**:
-   ```bash
-   git commit -m "Description of changes"
-   git push origin feature-branch-name
-   ```
-6. **Submit a Pull Request (PR)**:
-   - Go to the original repository.
-   - Click "New Pull Request."
-   - Select your fork and branch.
-   - Provide a detailed description of changes.
+- Changes to docs and schemas define the contract.
+- Implementations (when present) must conform to the contract.
+- Automation is expected to be deterministic, idempotent, and safe-by-default.
 
-### 3. Coding Guidelines
-- Follow PEP 8 for Python scripts.
-- Maintain modularity and reusability in UE5 Blueprint and C++ scripts.
-- Use meaningful variable and function names.
-- Document your code with clear comments and docstrings.
+## Project Status and Scope
+- **Current status**: documentation/specs are authoritative; implementation may be partial or absent.
+- **Primary scope**: editor-time automation for UE5 and Blender via MCP-style tools/commands.
+- **Non-goals**: shipping runtime gameplay code inside UE projects; unsandboxed destructive operations.
 
-### 4. Testing
-Before submitting a PR, ensure:
-- Your changes do not introduce new bugs.
-- Automated tests pass successfully (if applicable).
-- The functionality aligns with project goals.
+## Ways to Contribute
+- **Documentation/spec improvements**: clarity, rigor, schema definitions, examples, threat model, test vectors.
+- **Protocol work**: JSON schema/versioning, error model, idempotency semantics, tool descriptors.
+- **Reference implementation**: minimal CLI + registry + adapters with contract tests.
+- **Target adapters**: UE5 Remote Control / Python Editor Scripting, Blender add-on boundaries.
+- **Tooling**: CI, lint/type gates, release automation, reproducible dependency management.
 
-### 5. Documentation Contributions
-We encourage improvements to our documentation. If you find outdated or unclear instructions, submit PRs for `README.md`, `workflow.md`, or other relevant files.
+## Communication and Coordination
+- **Issues**: use GitHub Issues for bugs, requests, and proposals.
+- **Design discussions**: use Issues (or Discussions, if enabled) for RFC-level topics.
+- **Security**: see “Security Reporting” below.
 
-### 6. Communication
-For discussions, join our community:
-- **GitHub Discussions**: [Discussion Forum](https://github.com/your-repo/MCP/discussions)
-- **Discord/Slack (if available)**: Join our developer chat.
+## Reporting Issues
+When filing an issue, include:
+- **What you expected to happen**
+- **What happened instead**
+- **Reproduction steps** (minimal)
+- **Environment**
+  - OS
+  - Python version
+  - UE / Blender versions (if applicable)
+  - Transport mode (stdio / HTTP / TCP)
+- **Artifacts** (if available)
+  - run manifest
+  - logs
+  - exported scene/asset manifests
 
-We appreciate all contributions, from small typo fixes to large feature implementations! Thank you for helping improve MCP.
+## Proposing Changes (RFC-lite)
+If a change impacts external contracts (command names, tool schemas, request/response envelopes, error codes, config keys):
+- **Open an issue first** describing motivation, alternatives considered, and compatibility impact.
+- Prefer **additive** changes.
+- If a breaking change is unavoidable, propose a **versioned protocol bump** and a migration plan.
 
+## Development Environment (Recommended)
+This repo is Python-first.
+
+- **Python**: 3.11+.
+- **Virtual environment**: use `venv` or a modern toolchain (e.g., uv).
+- **Node**: optional (only if/when frontend or tooling requires it).
+
+If you are contributing UE5/Blender adapter work:
+- **UE5**: 5.x with Editor Scripting utilities and/or Remote Control API plugin enabled.
+- **Blender**: 3.x+ and ability to install a development add-on.
+
+## Quality Gates (What CI Should Enforce)
+Pull requests are expected to meet these standards:
+- **Formatting**: consistent formatting across Python and Markdown.
+- **Linting**: no new lint violations.
+- **Type checking**: no new type errors (when type checks exist).
+- **Tests**:
+  - Contract tests for schema compliance.
+  - Unit tests for deterministic logic.
+  - Integration tests for adapters (prefer fakes unless running real targets).
+- **Docs**: examples and references are accurate; links are not obviously broken.
+
+## Pull Request Process
+- **Branching**: create a topic branch off the default branch.
+- **Commits**: keep commits focused; avoid drive-by unrelated formatting.
+- **PR description**: include:
+  - Summary of changes
+  - Motivation/context
+  - User-visible impact
+  - Compatibility notes (breaking/additive)
+  - Test plan (what you ran, what you didn’t)
+
+Reviewers will focus on:
+- Contract stability (commands, schemas, errors)
+- Safety and policy boundaries
+- Determinism/idempotency semantics
+- Observability and auditability (run manifests, structured errors)
+
+## Security Reporting
+This project may eventually control powerful editor automation workflows. Treat it as security-sensitive.
+
+- **Do not** open public issues for vulnerabilities that enable remote code execution, credential exposure, or destructive automation without adequate safeguards.
+- Prefer private disclosure (via repository Security advisories, if enabled).
+- Include:
+  - Impact assessment
+  - Reproduction steps
+  - Suggested mitigations
+
+## Licensing and DCO/CLA
+Unless otherwise specified:
+- Contributions are accepted under the repository license.
+- If a DCO/CLA is introduced later, contributors may be asked to sign off accordingly.

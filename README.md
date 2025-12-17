@@ -1,79 +1,94 @@
-# UE5-MCP (Model Control Protocol)
-UPDATE: unfortunately we didnt move forward with the project due to time constraints. Feel free to use the docs.
+# UE5-MCP (Model Context Protocol)
+
+## Project Status
+This repository currently provides a **specification-first documentation set** for UE5 + Blender automation via MCP.
+
+Implementation is being built to match these docs. Until the code lands, treat:
+
+- **Docs as the contract** (what tools/commands/configs will do).
+- **Anything not explicitly specified** as undefined behavior.
+
 ## Overview
+UE5-MCP (Model Context Protocol) is a tool-and-protocol layer that enables **AI-assisted automation** across:
 
-UE5-MCP (Model Control Protocol) is designed to integrate AI-driven automation into Blender and Unreal Engine 5 (UE5) workflows. This project builds upon [BlenderMCP](https://github.com/ahujasid/blender-mcp) to provide an end-to-end pipeline for AI-driven game level creation, enhancing level design, asset management, and gameplay programming.
+- **Blender**: scene generation, asset creation, texturing/material workflows, export.
+- **Unreal Engine 5**: level assembly, terrain/PCG automation, Blueprint generation, profiling/optimization.
 
-## Features
+The goal is to let you express intent in natural language (or structured tool calls) and have MCP produce deterministic, inspectable actions in Blender/UE5.
 
-- **AI-Driven Scene Generation** (via BlenderMCP):
-  - Text-to-Scene conversion in Blender
-  - Image-to-Scene reference-based generation
-  - Material and texture management
-  - Automated scene composition
-  - PolyHaven asset integration
-- **Unreal Engine Integration**:
-  - Automated scene import
-  - Game level conversion
-  - Material and lighting transfer
-  - Level optimization utilities
-  - Blueprint-based scene manipulation
-- **Asset Management & Creation**: 
-  - Generates and modifies 3D models, textures, and materials using AI
-  - Workflow automation for asset transfers between Blender and UE5
-- **Gameplay Programming & Debugging**: 
-  - Assists in Blueprint scripting
-  - Performance profiling
-  - Automated debugging for UE5
+## What This Is / Isn’t
 
-## Prerequisites
+### This is
+- A **workflow automation system** that exposes well-defined tools (commands/APIs) for Blender and UE5.
+- A **provider-agnostic AI orchestration layer** (OpenAI/Claude/SD, etc.) with safety controls.
+- A **bridge** between DCC output (Blender) and engine ingestion (UE5), preserving materials, transforms, and metadata.
 
-- Blender (latest stable version)
-- Unreal Engine 5 (UE5)
-- Python 3.x
-- Required Python packages (specified in `dependencies.md`)
+### This isn’t
+- A replacement for Blender or UE5 authoring.
+- A guarantee of “one prompt builds an entire shippable game.”
+- A runtime plugin intended for packaged games; the initial target is **editor-time automation**.
 
-## Installation
+## Key Capabilities (Contract)
+- **Scene Generation (Blender)**: `mcp.generate_scene` + object placement + procedural textures.
+- **Asset Export/Transfer**: export to `.fbx`, `.obj`, `.gltf` with metadata conventions.
+- **Level Design Automation (UE5)**: terrain generation and asset population.
+- **Blueprint Automation (UE5)**: generate/edit Blueprints from behavioral specifications.
+- **Profiling & Optimization (UE5)**: produce reports and suggested remediations.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-repo/UE5-MCP.git
-   ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Configure settings (refer to `configurations.md`)
-4. Run MCP within Blender or UE5 as per the workflow instructions (`workflow.md`)
+See:
 
-## Usage
+- `workflow.md` for the end-to-end pipeline
+- `commands.md` for the command surface
+- `api_reference.md` for programmatic APIs
 
-- For **Blender**: Use Blender-MCP to automate scene creation and asset generation
-- For **Unreal Engine 5**: Utilize UE5-MCP for automated level design, asset integration, and debugging
-- For **AI Integration**: Check `ai_integration.md` for available AI-powered automation features
+## Quickstart (Spec-Driven)
+Until the implementation is available, you can still use the docs to plan integrations and project structure.
 
-For detailed commands and parameters, refer to `commands.md`.
+1. **Install prerequisites**
+   - Blender 3.x+
+   - UE 5.1+
+   - Python 3.x
+
+2. **Enable UE plugins**
+   - `Python Editor Script Plugin`
+   - `Procedural Content Generation (PCG) Framework`
+   - `UnrealCV Plugin` (if using UnrealCV-based transport)
+
+3. **Create configs**
+   - Blender: `~/.mcp/blender_mcp_config.json`
+   - UE5: `~/.mcp/ue5_mcp_config.json`
+
+4. **Run commands (examples)**
+   - `mcp.generate_scene "A medieval village with a river"`
+   - `mcp.export_asset "bridge_model" "fbx" "./exports/bridge.fbx"`
+   - `mcp.generate_terrain 2000 2000 "high"`
+   - `mcp.generate_blueprint "A door opens when the player interacts."`
+
+## Security, Safety, and Governance (2025 Baseline)
+- **Secrets**: API keys must be supplied via config or environment variables; never commit them.
+- **Least privilege**: default behavior should avoid destructive operations (delete/overwrite) unless explicitly enabled.
+- **Auditability**: every tool execution should emit structured logs (inputs, outputs, side effects, timings).
+- **Reproducibility**: generated assets/scripts should be traceable to prompts + tool parameters + versioned templates.
+
+See `configurations.md` and `ai_integration.md`.
+
+## Documentation Map
+- `architecture.md`: component boundaries, data flows, and security posture
+- `workflow.md`: end-to-end asset → engine pipeline
+- `commands.md`: CLI/tool surface and semantics
+- `api_reference.md`: programmatic APIs and contracts
+- `configurations.md`: config schema, precedence, secrets
+- `dependencies.md`: reproducible dependencies and toolchain requirements
+- `troubleshooting.md`: diagnostic playbooks
+
+## Roadmap (Implementation)
+- **MVP**: command registry + config loader + structured logging + stub Blender/UE adapters.
+- **UE5 editor integration**: Python/PCG automation + Blueprint generation scaffolding.
+- **Blender integration**: add-on skeleton + deterministic export pipeline.
+- **AI provider layer**: prompt templates, budget controls, eval harness, safety policies.
 
 ## Contributing
-
-See `CONTRIBUTING.md` for contributing guidelines and best practices.
+See `CONTRIBUTING.md`.
 
 ## License
-
-Refer to `LICENSE.md` for licensing details.
-
-## Troubleshooting
-
-If you encounter issues, check `troubleshooting.md` or submit an issue on GitHub.
-
-## Contact
-
-Vedant Gosavi
-Aditya Mhambrey
-Charles Green 
-
-## Acknowledgments
-
-- BlenderMCP project contributors
-- Unreal Engine community
-- [Additional acknowledgments]
+See `LICENSE.md`.

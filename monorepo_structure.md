@@ -1,152 +1,91 @@
 UE5-MCP/
 │
 ├── modules/                       # Core functional modules
-│   ├── protocol/                  # MCP Protocol definition (source of truth)
-│   │   ├── schemas/              # JSON schemas for protocol validation
-│   │   ├── versions/             # Versioned protocol definitions
-│   │   └── tests/                # Protocol conformance tests
+│
+│   ├── mcp_protocol/               # Contracts + schemas (source of truth)
+│   │   ├── schemas/                # JSON Schema for requests/results/errors
+│   │   ├── versions/               # Versioned protocol artifacts (e.g., v1, v1.1)
+│   │   └── python/                 # Pydantic/dataclass models generated from schemas
 │   │
-│   ├── core/                     # Shared core functionality
-│   │   ├── ai/                   # AI model interfaces and providers
-│   │   │   ├── openai/           # OpenAI integration
-│   │   │   ├── claude/           # Claude AI integration
-│   │   │   └── stable-diffusion/ # Stable Diffusion integration
-│   │   ├── utils/                # Common utilities
-│   │   ├── security/             # Authentication and authorization
-│   │   └── logging/              # Centralized logging infrastructure
+│   ├── mcp_core/                   # Control-plane runtime (planner/executor/policy)
+│   │   ├── registry/               # Command registry + tool descriptors
+│   │   ├── planning/               # Planner interface + plan IR
+│   │   ├── execution/              # Executor + idempotency + rollback
+│   │   ├── policy/                 # Policy engine + allow/deny rules
+│   │   ├── storage/                # Artifacts + run manifests
+│   │   └── observability/          # Structured logging + traces + metrics
 │   │
-│   ├── blender-mcp/              # Blender integration module
-│   │   ├── api/                  # Public API endpoints
-│   │   ├── services/             # Business logic services
-│   │   │   ├── scene/            # Scene generation services
-│   │   │   ├── asset/            # Asset management services
-│   │   │   └── texture/          # Texture generation services
-│   │   ├── adapters/             # External system adapters
-│   │   │   ├── ai-adapter/       # AI service adapter
-│   │   │   └── blender-adapter/  # Blender API adapter
-│   │   └── scripts/              # Blender Python scripts
+│   ├── mcp_cli/                    # CLI entrypoint (thin wrapper over mcp_core)
+│   │   └── mcp/                    # `python -m mcp` / console_scripts
 │   │
-│   └── ue5-mcp/                  # Unreal Engine 5 integration module
-│       ├── api/                  # Public API endpoints
-│       ├── services/             # Business logic services
-│       │   ├── level/            # Level design services
-│       │   ├── blueprint/        # Blueprint generation services
-│       │   └── performance/      # Performance optimization services
-│       ├── adapters/             # External system adapters
-│       │   ├── ai-adapter/       # AI service adapter
-│       │   └── ue5-adapter/      # UE5 API adapter
-│       └── scripts/              # UE5 Python and Blueprint scripts
+│   ├── mcp_target_blender/         # Blender adapter boundary (editor-time automation)
+│   │   ├── transport/              # stdio/IPC/HTTP adapters
+│   │   ├── addon/                  # Blender add-on shape (packaged separately)
+│   │   └── scripts/                # Blender Python scripts invoked by adapter
+│   │
+│   └── mcp_target_ue5/             # UE5 adapter boundary (editor-time automation)
+│       ├── transport/              # Remote Control API / TCP / stdio bridges
+│       ├── plugin/                # UE plugin shape (packaged separately)
+│       └── scripts/                # UE Python scripts + templates
 │
-├── infrastructure/               # Infrastructure as code
-│   ├── deployment/               # Deployment configurations
-│   │   ├── local/                # Local development setup
-│   │   ├── staging/              # Staging environment setup
-│   │   └── production/           # Production environment setup
-│   ├── ci/                       # CI/CD pipeline configurations
-│   │   ├── pipelines/            # Jenkins/GitHub Actions workflow definitions
-│   │   ├── scripts/              # Build and deployment scripts
-│   │   └── templates/            # Reusable CI templates
-│   └── monitoring/               # Monitoring and observability
-│       ├── metrics/              # Metrics collection
-│       ├── alerts/               # Alert configurations
-│       └── dashboards/           # Monitoring dashboards
+├── docs/                           # Long-form specs (eventually migrate root *.md here)
+├── tests/                          # Cross-package tests (contract + integration)
+│   ├── contract/                   # Schema and API conformance tests
+│   ├── integration/                # Adapter tests using fakes/simulators
+│   └── e2e/                        # Optional end-to-end tests (require Blender/UE)
 │
-├── docs/                         # Documentation
-│   ├── architecture/             # Architecture documentation
-│   │   ├── diagrams/             # Architecture diagrams
-│   │   ├── decisions/            # Architecture decision records (ADRs)
-│   │   └── protocols/            # Protocol specifications
-│   ├── api/                      # API documentation
-│   │   ├── blender-mcp/          # Blender-MCP API docs
-│   │   └── ue5-mcp/              # UE5-MCP API docs
-│   ├── user-guides/              # End-user documentation
-│   │   ├── blender-mcp/          # Blender-MCP user guides
-│   │   └── ue5-mcp/              # UE5-MCP user guides
-│   └── development/              # Developer documentation
-│       ├── setup/                # Development environment setup
-│       ├── contribution/         # Contribution guidelines
-│       └── standards/            # Coding standards and best practices
+├── tools/                          # Dev tooling (linters, generators, release helpers)
+├── scripts/                        # Repo scripts (bootstrap, smoke, release)
+├── .github/                        # CI, issue/PR templates, security metadata
 │
-├── assets/                       # Shared static assets
-│   ├── models/                   # 3D models
-│   ├── textures/                 # Textures and materials
-│   └── examples/                 # Example scenes and projects
-│
-├── tests/                        # Testing infrastructure
-│   ├── unit/                     # Unit tests per module
-│   │   ├── core/                 # Core module tests
-│   │   ├── blender-mcp/          # Blender-MCP module tests
-│   │   └── ue5-mcp/              # UE5-MCP module tests
-│   ├── integration/              # Integration tests
-│   ├── e2e/                      # End-to-end tests
-│   └── performance/              # Performance and load tests
-│
-├── tools/                        # Development and build tools
-│   ├── generators/               # Code and asset generators
-│   ├── linting/                  # Linting configurations
-│   ├── versioning/               # Version management tools
-│   └── dependency-management/    # Dependency management tools
-│
-├── scripts/                      # Repository-level scripts
-│   ├── setup.sh                  # Development environment setup
-│   ├── build.sh                  # Build script
-│   └── release.sh                # Release automation
-│
-├── .github/                      # GitHub-specific configurations
-│   ├── workflows/                # GitHub Actions workflows
-│   └── ISSUE_TEMPLATE/           # Issue templates
-│
-├── CHANGELOG.md                  # Repository changelog
-├── LICENSE.md                    # License details
-├── README.md                     # Project overview
-├── pyproject.toml                # Python package configuration
-└── requirements/                 # Dependency specifications
-    ├── base.txt                  # Common dependencies
-    ├── blender-mcp.txt           # Blender-MCP specific dependencies
-    ├── ue5-mcp.txt               # UE5-MCP specific dependencies
-    └── dev.txt                   # Development dependencies
-----------------------------------------------------------------------------------------
-Mapping the Core Features to the Monorepo Structure
-1) Level Design
-Relevant Modules:
+├── pyproject.toml                  # Root workspace config (tooling + shared settings)
+├── uv.lock                         # Reproducible dependency lock (preferred)
+└── README.md
 
-ue5-mcp/services/level/ → Dedicated to level design services, supporting AI-driven world-building.
-ue5-mcp/scripts/ → Contains Python & Blueprint scripts for automated level generation.
-ue5-mcp/api/ → API endpoints for interacting with procedural generation tools.
-Why it Fits?
+# Monorepo Structure (2025 Specification)
 
-AI-driven procedural level generation (e.g., "Generate a medieval village").
-Optimized for real-time placement of assets like trees, roads, and buildings.
-Performance tools for analyzing and refining level layouts.
-2) Asset Creation and Management
-Relevant Modules:
+## Purpose
+This document defines the *recommended* repository layout for a 2025 Python-first implementation of the UE5-MCP specification.
 
-blender-mcp/ → Handles 3D asset creation, texture synthesis, and management.
-blender-mcp/services/asset/ → Dedicated to asset handling, variations, and optimizations.
-blender-mcp/adapters/ai-adapter/ → AI-driven LOD generation, UV unwrapping, and texturing.
-Why it Fits?
+- **Specification-first**: The docs in this repository are the contract; code must conform.
+- **Control-plane vs data-plane**: `mcp_core` orchestrates; targets (Blender/UE5) execute editor-time actions.
+- **Packaging-ready**: Each module is a real Python package with independent tests and clear boundaries.
 
-Supports automated asset creation (e.g., "Generate 10 variations of this rock").
-Manages large libraries of 3D models.
-Integrates AI-driven optimizations (e.g., LOD creation, procedural textures).
-3) Gameplay Programming and Debugging
-Relevant Modules:
+## Design Principles
+- **Stable contracts**: JSON schema + versioned protocol artifacts live in `modules/mcp_protocol/`.
+- **Thin adapters**: Blender/UE5 packages should focus on transport + target-specific execution, not orchestration.
+- **Determinism and auditability**: Runs produce manifests and artifacts (see `architecture.md`, `automation.md`).
+- **Replaceable AI**: AI provider integrations must remain optional and isolated behind interfaces.
 
-ue5-mcp/services/blueprint/ → Automates Blueprint generation based on natural language inputs.
-ue5-mcp/services/performance/ → Focused on debugging performance bottlenecks.
-ue5-mcp/scripts/ → Automated C++ and Blueprint debugging tools.
-Why it Fits?
+## Build and Dependency Management (2025 baseline)
+- **Python**: 3.11+.
+- **Reproducibility**: prefer `uv.lock` (or an equivalent lock) committed to the repo.
+- **Optional extras**: target-specific dependencies are installed via extras (e.g., `.[blender]`, `.[ue5]`, `.[dev]`).
 
-Supports automatic Blueprint generation (e.g., "Create a door that opens when a player approaches").
-Helps with debugging logic errors in Blueprints and C++.
-AI-powered profiling for optimization (e.g., "Identify high-cost tick functions").
-Additional Enhancements to Consider
+## Testing and Quality Gates
+- **Unit tests**: colocated per module (fast, hermetic).
+- **Contract tests**: validate that CLI/SDK outputs conform to JSON schemas.
+- **Integration tests**: run adapters against fakes/stubs; real Blender/UE tests are opt-in.
+- **CI gates** (recommended): formatting + linting, type checking, tests, schema validation, docs link checks.
+
+## Release and Versioning
+- **SemVer**: version the protocol and the implementation separately.
+- **Protocol**: changes tracked under `modules/mcp_protocol/versions/` and tested via contract suite.
+- **Implementation**: tagged releases; changelog entries must link to protocol version compatibility.
+
+## Mapping Features to Packages
+- **Command surface**: `modules/mcp_cli/` (user-facing) calling into `modules/mcp_core/`.
+- **Planning/execution**: `modules/mcp_core/planning` and `modules/mcp_core/execution`.
+- **UE5 automation**: `modules/mcp_target_ue5/` (Remote Control API, Python Editor Scripting, etc.).
+- **Blender automation**: `modules/mcp_target_blender/` (addon + scripts + IPC).
+
+## Additional Enhancements to Consider
 Dedicated AI Scripting Layer
 
-Add a ue5-mcp/ai/ module to handle AI-driven automation for all three features.
+Add a `modules/mcp_ai/` package if/when AI becomes a first-class runtime component (providers, evals, budgeting).
 Integration with AI Services
 
-Ensure ue5-mcp/adapters/ai-adapter/ can interact with Claude, OpenAI, and Stable Diffusion.
+Ensure adapters can call provider-agnostic interfaces from `mcp_core` rather than embedding provider logic.
 Cloud vs. Local Compute
 
-Support both on-premise and cloud AI inference for asset generation and debugging.
+ Support both on-premise and cloud AI inference for asset generation and debugging.

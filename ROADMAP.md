@@ -28,6 +28,27 @@ An implementation can be considered “end-to-end viable” when all of the foll
 - Every run emits a `run_id` and produces a run manifest and relevant artifact manifests.
 - Failures always return structured errors (`error.code`) consistent with `api_reference.md`.
 
+## Version / Release Milestones
+
+This repo follows SemVer with a pragmatic approach for a spec-first project:
+
+- `0.y.z` releases are pre-stable and may include breaking changes as the implementation is established.
+- `1.0.0` is the first “stable implementation” milestone.
+
+Expected milestones:
+
+- `v0.0.0`: Spec + workflow baseline (docs contract, CI quality gates, contribution workflow).
+- `v0.1.0`: Phase 0 complete (repo + tooling baseline; package skeleton exists).
+- `v0.2.0`: Phase 1 complete (contracts as code: schemas + models + contract tests).
+- `v0.3.0`: Phase 2 complete (core runtime MVP: envelopes, policy, config).
+- `v0.4.0`: Phase 3 complete (artifacts, manifests, observability).
+- `v0.5.0`: Phase 4 complete (Blender adapter skeleton).
+- `v0.6.0`: Phase 5 complete (UE5 adapter skeleton).
+- `v0.7.0`: Phase 6 complete (end-to-end pipeline).
+- `v0.8.0`: Phase 7 complete (AI provider layer).
+- `v0.9.0`: Phase 8 complete (evals + regression harness).
+- `v1.0.0`: Phase 9 complete (packaging, releases, hardening).
+
 ## Phase 0 — Repository + Tooling Baseline (Week 0–1)
 
 **Goal**: make the repo implementation-ready without committing to a full runtime.

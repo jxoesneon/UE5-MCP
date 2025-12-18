@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp.dev/schemas/blender.json",
+  "title": "MCP Blender Tool Schemas",
+  "definitions": {
+    "Vec3": {
+      "type": "object",
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      },
+      "required": ["x", "y", "z"]
+    },
+    "GenerateSceneInput": {
+      "type": "object",
+      "properties": {
+        "description": { "type": "string" },
+        "seed": { "type": "integer" },
+        "style": { "type": "string" },
+        "dry_run": { "type": "boolean", "default": false }
+      },
+      "required": ["description"]
+    },
+    "AddObjectInput": {
+      "type": "object",
+      "properties": {
+        "object_type": { "type": "string" },
+        "location": { "$ref": "#/definitions/Vec3" },
+        "dry_run": { "type": "boolean", "default": false }
+      },
+      "required": ["object_type", "location"]
+    },
+    "GenerateTextureInput": {
+      "type": "object",
+      "properties": {
+        "object_name": { "type": "string" },
+        "texture_type": { "type": "string" },
+        "dry_run": { "type": "boolean", "default": false }
+      },
+      "required": ["object_name", "texture_type"]
+    },
+    "ExportAssetInput": {
+      "type": "object",
+      "properties": {
+        "object_name": { "type": "string" },
+        "format": { "type": "string", "enum": ["fbx", "obj", "gltf"] },
+        "filepath": { "type": "string" },
+        "include_textures": { "type": "boolean", "default": true },
+        "overwrite": { "type": "boolean", "default": false }
+      },
+      "required": ["object_name", "format", "filepath"]
+    }
+  }
+}

@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "UE5 + Blender automation via Model Context Protocol (spec-first)"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+  "pydantic>=2.0",
+]
 
 [dependency-groups]
 dev = [
@@ -12,6 +14,7 @@ dev = [
   "pre-commit",
   "pytest",
   "ruff",
+  "jsonschema>=4.0",
 ]
 
 [tool.ruff]

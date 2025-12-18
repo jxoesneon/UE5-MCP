@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp.dev/schemas/core.json",
+  "title": "MCP Core Envelopes",
+  "definitions": {
+    "Artifact": {
+      "type": "object",
+      "properties": {
+        "type": { "type": "string" },
+        "uri": { "type": "string", "format": "uri" },
+        "content": { "type": "string" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["type"]
+    },
+    "ToolResult": {
+      "type": "object",
+      "properties": {
+        "protocol_version": { "const": "1.0" },
+        "tool": { "type": "string" },
+        "request_id": { "type": "string" },
+        "run_id": { "type": "string" },
+        "status": { "const": "ok" },
+        "result": { "type": "object" },
+        "artifacts": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/Artifact" },
+          "default": []
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        }
+      },
+      "required": ["protocol_version", "tool", "request_id", "run_id", "status", "result"]
+    },
+    "ToolError": {
+      "type": "object",
+      "properties": {
+        "protocol_version": { "const": "1.0" },
+        "tool": { "type": "string" },
+        "request_id": { "type": "string" },
+        "run_id": { "type": "string" },
+        "status": { "const": "error" },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": { "type": "string" },
+            "message": { "type": "string" },
+            "retriable": { "type": "boolean", "default": false },
+            "details": { "type": "object", "default": {} }
+          },
+          "required": ["code", "message"]
+        }
+      },
+      "required": ["protocol_version", "tool", "request_id", "run_id", "status", "error"]
+    }
+  }
+}

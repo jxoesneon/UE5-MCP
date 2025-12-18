@@ -27,17 +27,17 @@ def test_core_schema_validity():
     }
     # We need to resolve local refs. For this test, we can just extract the definition
     # or use a resolver. Since definitions are local to the file, we can test against the definition schema directly if we wrap it?
-    # Actually, simpler: jsonschema handles #/definitions/ automatically if we validate against the root schema 
-    # BUT the root schema in core.json doesn't define the structure of the *document* itself to be a ToolResult, 
+    # Actually, simpler: jsonschema handles #/definitions/ automatically if we validate against the root schema
+    # BUT the root schema in core.json doesn't define the structure of the *document* itself to be a ToolResult,
     # it defines definitions.
-    
+
     # So we construct a schema that expects a ToolResult
     test_schema = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$ref": "#/definitions/ToolResult",
         "definitions": schema["definitions"]
     }
-    
+
     validate(instance=valid_result, schema=test_schema)
 
     # Test invalid result (missing tool)
@@ -53,20 +53,20 @@ def test_core_schema_validity():
 
 def test_blender_schema_validity():
     schema = load_schema(BLENDER_SCHEMA)
-    
+
     # Test GenerateSceneInput
     test_schema = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$ref": "#/definitions/GenerateSceneInput",
         "definitions": schema["definitions"]
     }
-    
+
     valid_input = {
         "description": "A test scene",
         "dry_run": True
     }
     validate(instance=valid_input, schema=test_schema)
-    
+
     invalid_input = {
         "dry_run": True
         # missing description
@@ -76,21 +76,21 @@ def test_blender_schema_validity():
 
 def test_ue5_schema_validity():
     schema = load_schema(UE5_SCHEMA)
-    
+
     # Test GenerateTerrainInput
     test_schema = {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "$ref": "#/definitions/GenerateTerrainInput",
         "definitions": schema["definitions"]
     }
-    
+
     valid_input = {
         "width": 100,
         "height": 100,
         "detail_level": "medium"
     }
     validate(instance=valid_input, schema=test_schema)
-    
+
     invalid_input = {
         "width": 100,
         "height": 100,

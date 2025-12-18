@@ -47,16 +47,16 @@ DOC_MAPPINGS = [
 def extract_json_blocks(file_path: Path, target_header: str) -> list[dict]:
     lines = file_path.read_text(encoding="utf-8").splitlines()
     blocks = []
-    
+
     state = "SEARCHING_HEADER"
     current_json = []
     header_level = len(target_header.split()[0])
-    
+
     for line in lines:
         if state == "SEARCHING_HEADER":
             if line.strip().startswith(target_header):
                 state = "SEARCHING_BLOCK"
-        
+
         elif state == "SEARCHING_BLOCK":
             if line.strip().startswith("```json"):
                 state = "READING_BLOCK"
@@ -66,7 +66,7 @@ def extract_json_blocks(file_path: Path, target_header: str) -> list[dict]:
                 if curr_level <= header_level:
                     # Found a header of same or higher importance, stop searching for this section
                     state = "SEARCHING_HEADER"
-        
+
         elif state == "READING_BLOCK":
             if line.strip().startswith("```"):
                 # End of block
@@ -75,12 +75,12 @@ def extract_json_blocks(file_path: Path, target_header: str) -> list[dict]:
                     blocks.append(json.loads(json_str))
                 except json.JSONDecodeError as e:
                     pytest.fail(f"Invalid JSON in {file_path} section {target_header}: {e}")
-                
+
                 current_json = []
                 state = "SEARCHING_BLOCK"
             else:
                 current_json.append(line)
-                
+
     return blocks
 
 @pytest.mark.parametrize("mapping", DOC_MAPPINGS)
@@ -88,13 +88,13 @@ def test_doc_json_validity(mapping):
     file_path = REPO_ROOT / mapping["file"]
     if not file_path.exists():
         pytest.skip(f"{mapping['file']} not found")
-        
+
     schema = get_definition_schema(mapping["definition"])
-    
+
     blocks = extract_json_blocks(file_path, mapping["header"])
-    
+
     if not blocks:
         pytest.fail(f"No JSON blocks found for '{mapping['header']}' in {mapping['file']}")
-        
+
     for block in blocks:
         validate(instance=block, schema=schema)

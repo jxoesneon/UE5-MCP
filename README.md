@@ -98,6 +98,10 @@ See `ROADMAP.md` for a phased, end-to-end implementation plan with acceptance cr
 
 See `CONTRIBUTING.md`.
 
+## Support
+
+If you’d like to support ongoing development, you can donate via [Ko-fi](https://ko-fi.com/jxoesneon).
+
 ## License
 
 See `LICENSE.md`.

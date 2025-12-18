@@ -68,4 +68,4 @@ jobs:
 
       - name: Lint Markdown
         run: |
-          markdownlint-cli2 "**/*.md" "#node_modules"
+          markdownlint-cli2 "**/*.md" "#node_modules" "#venv" "#.venv"

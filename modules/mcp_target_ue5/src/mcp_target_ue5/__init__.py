@@ -21,7 +21,7 @@ from .tools import (
 
 __all__ = ["__version__", "register_ue5_tools"]
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 
 def register_ue5_tools(registry: ToolRegistry) -> None:

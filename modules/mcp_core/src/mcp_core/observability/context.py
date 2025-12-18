@@ -45,5 +45,5 @@ def set_context(
         tokens[_trace_id_ctx] = _trace_id_ctx.set(trace_id)
     if tool_name is not None:
         tokens[_tool_name_ctx] = _tool_name_ctx.set(tool_name)
-    
+
     return ContextToken(tokens)

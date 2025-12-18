@@ -118,14 +118,14 @@ class ToolExecutor:
                 # Ensure IDs match context
                 result_or_error.run_id = run_id
                 result_or_error.request_id = req_id
-                
+
                 logger.error(f"Tool execution failed: {result_or_error.error.message}")
                 return result_or_error
 
             # It's a ToolResult
             manifest.status = "success"
             manifest.outputs = result_or_error.result
-            
+
             # Ensure IDs match context
             result_or_error.run_id = run_id
             result_or_error.request_id = req_id

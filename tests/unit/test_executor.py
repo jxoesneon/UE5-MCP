@@ -53,18 +53,18 @@ def mock_policy(monkeypatch):
 def test_execute_success(mock_storage, mock_policy):
     executor = ToolExecutor()
     input_data = MockInput(value="hello")
-    
+
     result = executor.execute("mock.tool", input_data)
-    
+
     assert isinstance(result, ToolResult)
     assert result.status == "ok"
     assert result.result["echo"] == "hello"
-    
+
     # Check artifacts stored
     assert len(result.artifacts) == 1
     assert result.artifacts[0].uri == "/tmp/art"
     mock_storage.store_artifact.assert_called_once()
-    
+
     # Check manifest written
     mock_storage.write_run_manifest.assert_called_once()
     manifest = mock_storage.write_run_manifest.call_args[0][0]
@@ -75,11 +75,11 @@ def test_execute_success(mock_storage, mock_policy):
 def test_execute_tool_not_found(mock_storage):
     executor = ToolExecutor()
     result = executor.execute("nonexistent", {"value": "foo"})
-    
+
     assert isinstance(result, ToolError)
     assert result.error.code == "INTERNAL_ERROR" # Currently ValueError -> Internal Error
     assert "not found" in result.error.message
-    
+
     # Manifest should record error
     mock_storage.write_run_manifest.assert_called_once()
     manifest = mock_storage.write_run_manifest.call_args[0][0]
@@ -89,10 +89,10 @@ def test_execute_validation_error(mock_storage):
     executor = ToolExecutor()
     # Missing required field 'value'
     result = executor.execute("mock.tool", {})
-    
+
     assert isinstance(result, ToolError)
     assert result.error.code == "VALIDATION_ERROR"
-    
+
     mock_storage.write_run_manifest.assert_called_once()
     manifest = mock_storage.write_run_manifest.call_args[0][0]
     assert manifest.status == "error"
@@ -100,10 +100,10 @@ def test_execute_validation_error(mock_storage):
 def test_execute_tool_error(mock_storage, mock_policy):
     executor = ToolExecutor()
     result = executor.execute("mock.error", {"value": "fail"})
-    
+
     assert isinstance(result, ToolError)
     assert result.error.code == "TEST_ERROR"
-    
+
     mock_storage.write_run_manifest.assert_called_once()
     manifest = mock_storage.write_run_manifest.call_args[0][0]
     assert manifest.status == "error"
@@ -111,14 +111,14 @@ def test_execute_tool_error(mock_storage, mock_policy):
 
 def test_execute_policy_denied(mock_storage, mock_policy):
     mock_policy.check_tool_allowed.side_effect = PermissionError("Not allowed")
-    
+
     executor = ToolExecutor()
     result = executor.execute("mock.tool", {"value": "denied"})
-    
+
     assert isinstance(result, ToolError)
     assert result.error.code == "INTERNAL_ERROR" # PermissionError -> Internal Error in current catch-all
     # Ideally should be POLICY_DENIED, but currently executor catches all Exception.
     # We might want to improve executor error handling later.
     assert "Not allowed" in result.error.message
-    
+
     mock_storage.write_run_manifest.assert_called_once()

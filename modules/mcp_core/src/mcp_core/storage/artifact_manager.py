@@ -25,7 +25,7 @@ class ArtifactManager:
             return artifact
 
         run_dir = self.ensure_run_dir(run_id)
-        
+
         # Determine filename. Use a sanitized name from metadata or default.
         filename = "artifact"
         if artifact.metadata and "filename" in artifact.metadata:
@@ -33,20 +33,20 @@ class ArtifactManager:
         elif artifact.uri:
             # If URI is already set (e.g. input path), use basename
             filename = Path(artifact.uri).name
-        
+
         # Simple sanitization
         filename = "".join(c for c in filename if c.isalnum() or c in "._-")
-        
+
         # Avoid collisions? For now, simplistic overwrite or append timestamp could work.
         # Let's trust the tool provided a unique name or accept overwrite.
-        
+
         file_path = run_dir / filename
-        
+
         # Write content
         # Assuming content is text for now as per Artifact model (str | None)
         # If we handle binary, we might need to change model or encode as base64
         file_path.write_text(artifact.content, encoding="utf-8")
-        
+
         # Update artifact to reference the file URI
         return artifact.model_copy(update={"uri": str(file_path), "content": None})
 
@@ -57,10 +57,10 @@ class ArtifactManager:
 
         run_dir = self.ensure_run_dir(manifest.run_id)
         manifest_path = run_dir / "run_manifest.json"
-        
+
         manifest_json = manifest.model_dump_json(indent=2)
         manifest_path.write_text(manifest_json, encoding="utf-8")
-        
+
         return manifest_path
 
     def get_run_dir(self, run_id: str) -> Path:

@@ -1,6 +1,6 @@
 [project]
 name = "ue5-mcp"
-version = "0.7.0"
+version = "0.8.0"
 description = "UE5 + Blender automation via Model Context Protocol (spec-first)"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -16,7 +16,7 @@ class SafetyValidator:
     """
     def __init__(self, policy: SafetyPolicy = SafetyPolicy()):
         self.policy = policy
-        
+
         # Simple heuristic patterns for prompt injection or dangerous code
         self._injection_patterns = [
             r"ignore previous instructions",
@@ -42,9 +42,9 @@ class SafetyValidator:
         """
         if tool_name in self.policy.deny_tools:
             return False
-            
+
         if self.policy.allowed_tools is not None:
             if tool_name not in self.policy.allowed_tools:
                 return False
-                
+
         return True

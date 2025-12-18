@@ -5,6 +5,10 @@ import traceback
 # Ensure we can import bpy
 try:
     import bpy
+    # bmesh and mathutils are commonly used in Blender scripts but seemingly unused here.
+    # Keeping them commented out if needed later, or just removing to satisfy linter.
+    # import bmesh
+    # from mathutils import Vector
 except ImportError:
     # This script must be run from within Blender
     sys.stderr.write("Error: This script must be run from within Blender.\n")
@@ -104,6 +108,11 @@ def handle_generate_texture(params):
     bsdf = nodes.get("Principled BSDF")
 
     import random
+    seed = params.get("seed")
+    if seed is not None:
+        log(f"Seeding random with {seed}")
+        random.seed(seed)
+
     color = (random.random(), random.random(), random.random(), 1)
 
     if bsdf:

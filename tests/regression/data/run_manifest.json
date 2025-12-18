@@ -1,0 +1,19 @@
+{
+  "artifacts": [],
+  "config_hash": "abc123hash",
+  "duration_seconds": 1.0,
+  "end_time": "2023-01-01T12:00:01Z",
+  "error": null,
+  "inputs": {
+    "param": "value"
+  },
+  "outputs": {
+    "result": "ok"
+  },
+  "request_id": "req-123",
+  "run_id": "run-456",
+  "start_time": "2023-01-01T12:00:00Z",
+  "status": "success",
+  "tool_name": "mcp.test",
+  "tool_version": "1.0.0"
+}

@@ -26,7 +26,7 @@ class AIClient:
     ):
         self.provider = provider
         self.config = config
-        
+
         # Convert settings to domain models
         budget_config = AIBudgetConfig(
             max_requests_per_run=config.budget.max_requests_per_run,
@@ -34,14 +34,14 @@ class AIClient:
             max_total_cost_usd=config.budget.max_total_cost_usd,
         )
         self.budget_tracker = BudgetTracker(budget_config)
-        
+
         safety_policy = SafetyPolicy(
             block_injection_patterns=safety_config.block_injection_patterns,
             allowed_tools=safety_config.allowed_tools,
             deny_tools=safety_config.deny_tools,
         )
         self.safety_validator = SafetyValidator(safety_policy)
-        
+
         self.prompt_registry = prompt_registry or PromptRegistry()
 
     async def generate(
@@ -77,7 +77,7 @@ class AIClient:
             model=model,
             **kwargs
         )
-        
+
         response = await self.provider.generate_text(request)
 
         # 5. Safety Check (Output)

@@ -31,7 +31,7 @@ class PromptTemplate(BaseModel):
         missing = [var for var in self.input_variables if var not in kwargs]
         if missing:
             raise ValueError(f"Missing required variables for prompt '{self.name}': {', '.join(missing)}")
-        
+
         # Simple f-string style formatting, but safer to use string.Template or jinja2 if complex.
         # For now, we assume simple {var} substitution using str.format map.
         try:
@@ -53,10 +53,10 @@ class PromptRegistry:
         """Register a new prompt template."""
         if template.name not in self._templates:
             self._templates[template.name] = {}
-        
+
         if template.version in self._templates[template.name]:
             raise ValueError(f"Prompt '{template.name}' version {template.version} already registered.")
-            
+
         self._templates[template.name][template.version] = template
 
     def get(self, name: str, version: int | None = None) -> PromptTemplate:
@@ -66,14 +66,14 @@ class PromptRegistry:
         """
         if name not in self._templates:
             raise ValueError(f"Prompt '{name}' not found.")
-            
+
         versions = self._templates[name]
-        
+
         if version is not None:
             if version not in versions:
                 raise ValueError(f"Prompt '{name}' version {version} not found.")
             return versions[version]
-            
+
         # Get latest version
         latest_version = max(versions.keys())
         return versions[latest_version]

@@ -37,26 +37,26 @@ async def test_ai_client_flow():
     config = AIConfig(enabled=True)
     safety_config = SafetyConfig()
     registry = PromptRegistry()
-    
+
     registry.register(PromptTemplate(
         name="hello",
         version=1,
         template="Hello {name}",
         input_variables=["name"]
     ))
-    
+
     client = AIClient(provider, config, safety_config, registry)
-    
+
     # Execute
     response = await client.generate(
         prompt_name="hello",
         variables={"name": "World"}
     )
-    
+
     # Verify
     assert response.content == "Echo: Hello World"
     assert response.usage.total_tokens == 20
-    
+
     # Verify budget tracking
     assert client.budget_tracker.current_cost_usd == 0.001
     assert client.budget_tracker.current_tokens == 20
@@ -68,16 +68,16 @@ async def test_ai_client_safety_input():
     config = AIConfig()
     safety_config = SafetyConfig(block_injection_patterns=True)
     registry = PromptRegistry()
-    
+
     registry.register(PromptTemplate(
         name="unsafe",
         version=1,
         template="{content}",
         input_variables=["content"]
     ))
-    
+
     client = AIClient(provider, config, safety_config, registry)
-    
+
     with pytest.raises(ValueError, match="Input prompt violates safety policy"):
         await client.generate(
             prompt_name="unsafe",
@@ -90,9 +90,9 @@ async def test_ai_client_missing_prompt():
     config = AIConfig()
     safety_config = SafetyConfig()
     registry = PromptRegistry()
-    
+
     client = AIClient(provider, config, safety_config, registry)
-    
+
     with pytest.raises(ValueError, match="not found"):
         await client.generate(
             prompt_name="nonexistent",
@@ -107,14 +107,14 @@ async def test_ai_client_budget_exceeded():
     )
     safety_config = SafetyConfig()
     registry = PromptRegistry()
-    
+
     registry.register(PromptTemplate(name="t", version=1, template="t"))
-    
+
     client = AIClient(provider, config, safety_config, registry)
-    
+
     # First request OK
     await client.generate("t", {})
-    
+
     # Second request fails pre-flight
     with pytest.raises(ValueError, match="Budget exceeded"):
         await client.generate("t", {})

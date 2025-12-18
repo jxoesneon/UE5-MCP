@@ -22,17 +22,17 @@ from mcp_core.config.settings import settings
 
 class DemoMockProvider(AIProvider):
     """A simple mock provider for verification purposes."""
-    
+
     @property
     def name(self) -> str:
         return "demo-mock"
 
     async def generate_text(self, request: AICompletionRequest) -> AICompletionResponse:
         print(f"[Provider] Received request: {request.prompt[:50]}...")
-        
+
         # Simulate processing
         await asyncio.sleep(0.1)
-        
+
         return AICompletionResponse(
             content=f"Generated content based on: {request.prompt}",
             model="mock-gpt-4",
@@ -43,7 +43,7 @@ class DemoMockProvider(AIProvider):
                 cost_usd=0.0005
             )
         )
-        
+
     async def check_health(self) -> bool:
         return True
 
@@ -51,18 +51,18 @@ class DemoMockProvider(AIProvider):
 
 async def main():
     print("=== AI Layer Verification ===")
-    
+
     # 1. Setup
     print("\n1. Setting up AI Client...")
     provider = DemoMockProvider()
-    
+
     # Use global settings (which load defaults)
     client = AIClient(
         provider=provider,
         config=settings.ai,
         safety_config=settings.safety
     )
-    
+
     # 2. Register Prompts
     print("\n2. Registering Prompt Templates...")
     template = PromptTemplate(
@@ -94,7 +94,7 @@ async def main():
 
     # 5. Safety Check (Failure Case)
     print("\n5. Verifying Safety Controls (Failure Case)...")
-    
+
     # Register an unsafe prompt template for testing
     unsafe_template = PromptTemplate(
         name="unsafe_exec",
@@ -103,19 +103,19 @@ async def main():
         input_variables=["command"]
     )
     client.prompt_registry.register(unsafe_template)
-    
+
     try:
         # We simulate an injection attempt or unsafe content
-        # Note: The basic safety policy checks for patterns. 
-        # "Execute this command" might not trigger it unless we add specific patterns 
+        # Note: The basic safety policy checks for patterns.
+        # "Execute this command" might not trigger it unless we add specific patterns
         # or if the validator implementation logic flags it.
         # Let's try to trigger the 'os.system' deny tool if the prompt were interpreted as tool use,
         # but here we are generating text.
         # Let's try to trigger a known injection pattern if configured.
-        
+
         # For this verification, we'll just check if the validator runs.
         # If we passed "Ignore previous instructions", the default validator might catch it if configured.
-        
+
         print("   Attempting generation with potential injection pattern...")
         await client.generate(
             prompt_name="greet_user",
@@ -125,7 +125,7 @@ async def main():
         print(f"   Caught expected safety violation: {e}")
     except Exception as e:
         print(f"   Result: {e}")
-        
+
     print("\n=== Verification Complete ===")
 
 if __name__ == "__main__":

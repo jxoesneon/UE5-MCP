@@ -13,7 +13,7 @@ class AIBudgetConfig(BaseModel):
     max_total_cost_usd: float | None = None
     max_total_tokens: int | None = None
     max_requests_per_run: int | None = None
-    
+
     # Optional: enforcing limits over a time window (e.g. daily) is out of scope for now
     # as this is mostly per-run context.
 

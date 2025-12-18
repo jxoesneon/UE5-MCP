@@ -20,7 +20,7 @@ class AICompletionRequest(BaseModel):
     max_tokens: int | None = None
     stop_sequences: list[str] | None = None
     stream: bool = False
-    
+
     # Metadata for logging/budgeting
     request_id: str | None = None
     user_id: str | None = None

@@ -15,7 +15,7 @@ from .tools import (
 
 __all__ = ["__version__", "register_blender_tools"]
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 
 def register_blender_tools(registry: ToolRegistry) -> None:

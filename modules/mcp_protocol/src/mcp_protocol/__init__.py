@@ -47,6 +47,7 @@ __all__ = [
     "ConfigGetInput",
     "ConfigSetInput",
     "ResetConfigInput",
+    "ExportManifest",
 ]
 
 

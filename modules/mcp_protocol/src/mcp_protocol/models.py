@@ -77,6 +77,7 @@ class ExportAssetInput(BaseModel):
     filepath: str
     include_textures: bool = True
     overwrite: bool = False
+    dry_run: bool = False
 
 # --- UE5 Tool Inputs ---
 
@@ -130,3 +131,16 @@ class ConfigSetInput(BaseModel):
 
 class ResetConfigInput(BaseModel):
     confirm: bool = False
+
+# --- Manifests ---
+
+class ExportManifest(BaseModel):
+    export_path: str
+    format: Literal["fbx", "obj", "gltf"]
+    object_name: str
+    unit_scale: float = 1.0
+    axis_up: Literal["Z", "Y"] = "Z"
+    axis_forward: Literal["X", "Y", "-X", "-Y", "Z", "-Z"] = "X"
+    material_slots: list[str] = Field(default_factory=list)
+    texture_references: dict[str, str] = Field(default_factory=dict)
+    provenance: dict[str, Any] | None = None

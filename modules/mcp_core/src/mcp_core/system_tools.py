@@ -12,7 +12,7 @@ from mcp_protocol import (
 )
 
 from .config.settings import settings
-from .registry import registry
+from .registry import ToolRegistry, registry
 
 
 def list_commands_handler(input: ListCommandsInput) -> ToolResult | ToolError:
@@ -117,7 +117,7 @@ def reset_config_handler(input: ResetConfigInput) -> ToolResult | ToolError:
         )
     )
 
-def register_system_tools():
+def register_system_tools(registry: ToolRegistry = registry):
     registry.register(
         name="mcp.list_commands",
         description="List all available tools and their schemas.",

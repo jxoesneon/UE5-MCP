@@ -12,6 +12,7 @@ from mcp_protocol.models import (
     ToolResult,
 )
 
+
 def generate_scene(input: GenerateSceneInput) -> ToolResult | ToolError:
     """
     Generate a Blender scene based on a description.
@@ -19,7 +20,7 @@ def generate_scene(input: GenerateSceneInput) -> ToolResult | ToolError:
     ctx = get_current_context()
     # In a real implementation, this would communicate with Blender.
     # For the skeleton, we just validate and return a success result.
-    
+
     return ToolResult(
         tool="generate_scene",
         request_id=ctx.request_id or "",
@@ -67,7 +68,7 @@ def export_asset(input: ExportAssetInput) -> ToolResult | ToolError:
     ctx = get_current_context()
     # Simulate export by creating the file if it doesn't exist (if not dry run)
     # and creating an export manifest artifact.
-    
+
     if not input.dry_run:
         # In a real implementation, this would trigger Blender export.
         pass
@@ -83,7 +84,7 @@ def export_asset(input: ExportAssetInput) -> ToolResult | ToolError:
             "timestamp": datetime.utcnow().isoformat()
         }
     )
-    
+
     # Create artifact for the manifest
     artifact = Artifact(
         type="application/json",

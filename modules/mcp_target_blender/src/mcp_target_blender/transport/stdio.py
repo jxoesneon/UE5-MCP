@@ -3,6 +3,7 @@ from typing import Any
 
 from .base import BlenderTransport
 
+
 class StdioTransport(BlenderTransport):
     """
     Transport implementation using standard I/O (subprocess).
@@ -37,7 +38,7 @@ class StdioTransport(BlenderTransport):
         # 1. Write json.dumps({"command": command, "params": params}) to self._process.stdin
         # 2. Read line from self._process.stdout
         # 3. Parse json
-        
+
         # For skeleton, return a mock response based on the command
         return {
             "status": "ok",

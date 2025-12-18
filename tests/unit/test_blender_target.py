@@ -75,13 +75,13 @@ def test_export_asset_dry_run(context_setup) -> None:
     result = export_asset(input_data)
     assert result.status == "ok"
     assert result.result["message"] == "Exported 'Cube' to '/tmp/cube.fbx'"
-    
+
     # Check artifacts
     assert len(result.artifacts) == 1
     artifact = result.artifacts[0]
     assert artifact.type == "application/json"
     assert artifact.metadata["type"] == "export_manifest"
-    
+
     # Verify manifest content
     import json
     manifest = json.loads(artifact.content)
@@ -95,7 +95,7 @@ def test_export_asset_dry_run(context_setup) -> None:
 def test_transport_instantiation() -> None:
     transport = StdioTransport()
     assert transport.blender_path == "blender"
-    
+
     # Test stub methods
     transport.connect()
     resp = transport.send_command("ping", {})

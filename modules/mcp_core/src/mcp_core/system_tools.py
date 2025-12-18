@@ -46,7 +46,7 @@ def help_handler(input: HelpInput) -> ToolResult | ToolError:
                 message=f"Tool '{input.command_name}' not found."
             )
         )
-    
+
     result = {
         "name": tool.name,
         "description": tool.description,
@@ -93,7 +93,7 @@ def config_get_handler(input: ConfigGetInput) -> ToolResult | ToolError:
         result={"key": input.key, "value": value}
     )
 
-# Note: Config Set/Reset are placeholders as BaseSettings is immutable by default 
+# Note: Config Set/Reset are placeholders as BaseSettings is immutable by default
 # and typical usage is env vars or files. Runtime modification would require a mutable backing store.
 def config_set_handler(input: ConfigSetInput) -> ToolResult | ToolError:
     return ToolError(

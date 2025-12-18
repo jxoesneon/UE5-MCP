@@ -23,7 +23,7 @@ class ToolRegistry:
     ) -> None:
         if name in self._tools:
             raise ValueError(f"Tool '{name}' is already registered.")
-        
+
         self._tools[name] = ToolEntry(
             name=name,
             description=description,

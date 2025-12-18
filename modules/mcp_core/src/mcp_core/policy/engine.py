@@ -33,7 +33,7 @@ class PolicyEngine:
 
         # Resolve path to be absolute
         target_path = Path(path).expanduser().resolve()
-        
+
         is_allowed = False
         for allowed in allowed_paths:
             allowed_path = Path(allowed).expanduser().resolve()
@@ -44,7 +44,7 @@ class PolicyEngine:
                 break
             except ValueError:
                 continue
-        
+
         if not is_allowed:
             raise PermissionError(
                 f"Path '{path}' is not in the allowed_paths list."

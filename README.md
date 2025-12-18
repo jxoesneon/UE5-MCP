@@ -1,6 +1,7 @@
 # UE5-MCP (Model Context Protocol)
 
 ## Project Status
+
 This repository currently provides a **specification-first documentation set** for UE5 + Blender automation via MCP.
 
 Implementation is being built to match these docs. Until the code lands, treat:
@@ -9,6 +10,7 @@ Implementation is being built to match these docs. Until the code lands, treat:
 - **Anything not explicitly specified** as undefined behavior.
 
 ## Overview
+
 UE5-MCP (Model Context Protocol) is a tool-and-protocol layer that enables **AI-assisted automation** across:
 
 - **Blender**: scene generation, asset creation, texturing/material workflows, export.
@@ -19,16 +21,19 @@ The goal is to let you express intent in natural language (or structured tool ca
 ## What This Is / Isn’t
 
 ### This is
+
 - A **workflow automation system** that exposes well-defined tools (commands/APIs) for Blender and UE5.
 - A **provider-agnostic AI orchestration layer** (OpenAI/Claude/SD, etc.) with safety controls.
 - A **bridge** between DCC output (Blender) and engine ingestion (UE5), preserving materials, transforms, and metadata.
 
 ### This isn’t
+
 - A replacement for Blender or UE5 authoring.
 - A guarantee of “one prompt builds an entire shippable game.”
 - A runtime plugin intended for packaged games; the initial target is **editor-time automation**.
 
 ## Key Capabilities (Contract)
+
 - **Scene Generation (Blender)**: `mcp.generate_scene` + object placement + procedural textures.
 - **Asset Export/Transfer**: export to `.fbx`, `.obj`, `.gltf` with metadata conventions.
 - **Level Design Automation (UE5)**: terrain generation and asset population.
@@ -42,6 +47,7 @@ See:
 - `api_reference.md` for programmatic APIs
 
 ## Quickstart (Spec-Driven)
+
 Until the implementation is available, you can still use the docs to plan integrations and project structure.
 
 1. **Install prerequisites**
@@ -65,6 +71,7 @@ Until the implementation is available, you can still use the docs to plan integr
    - `mcp.generate_blueprint "A door opens when the player interacts."`
 
 ## Security, Safety, and Governance (2025 Baseline)
+
 - **Secrets**: API keys must be supplied via config or environment variables; never commit them.
 - **Least privilege**: default behavior should avoid destructive operations (delete/overwrite) unless explicitly enabled.
 - **Auditability**: every tool execution should emit structured logs (inputs, outputs, side effects, timings).
@@ -73,6 +80,7 @@ Until the implementation is available, you can still use the docs to plan integr
 See `configurations.md` and `ai_integration.md`.
 
 ## Documentation Map
+
 - `architecture.md`: component boundaries, data flows, and security posture
 - `workflow.md`: end-to-end asset → engine pipeline
 - `commands.md`: CLI/tool surface and semantics
@@ -83,10 +91,13 @@ See `configurations.md` and `ai_integration.md`.
 - `ROADMAP.md`: end-to-end implementation roadmap (phases, acceptance criteria, risks)
 
 ## Roadmap (Implementation)
+
 See `ROADMAP.md` for a phased, end-to-end implementation plan with acceptance criteria, risks, and spec mappings.
 
 ## Contributing
+
 See `CONTRIBUTING.md`.
 
 ## License
+
 See `LICENSE.md`.

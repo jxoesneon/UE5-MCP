@@ -1,6 +1,7 @@
 # MCP Configurations
 
 ## Overview
+
 This document defines MCP’s configuration model: file locations, schema, precedence, secrets handling, and operational guidance.
 
 Configuration is split by **target runtime**:
@@ -11,12 +12,14 @@ Configuration is split by **target runtime**:
 Implementations SHOULD support a single “effective config” view that merges defaults, config files, environment overrides, and CLI overrides.
 
 ## Goals
+
 - **Reproducibility**: runs must be traceable to an immutable config snapshot hash.
 - **Safety**: secrets are never logged; destructive settings default to off.
 - **Portability**: configs are explicit and can be checked into a project repo (without secrets).
 - **Clarity**: every key has a documented type, default, and scope.
 
 ## Configuration Precedence
+
 Highest priority wins:
 
 1. CLI flags (implementation-defined)
@@ -25,6 +28,7 @@ Highest priority wins:
 4. Built-in defaults
 
 ## Secrets Handling
+
 - Secrets MUST be supplied via environment variables or a separate secrets store.
 - Config files MUST NOT require embedding secrets.
 - Implementations MUST redact secrets in logs and in `mcp.config get` output by default.
@@ -34,9 +38,11 @@ Recommended convention:
 - `MCP_AI_API_KEY` (or provider-specific equivalents)
 
 ## Schema (Conceptual)
+
 The following is a conceptual schema. Implementations SHOULD also publish a JSON Schema for validation.
 
 ### 1) Common Keys
+
 ```json
 {
   "protocol_version": "1.0",
@@ -68,6 +74,7 @@ The following is a conceptual schema. Implementations SHOULD also publish a JSON
 ```
 
 ### 2) Blender Target Keys
+
 ```json
 {
   "blender": {
@@ -92,6 +99,7 @@ The following is a conceptual schema. Implementations SHOULD also publish a JSON
 ```
 
 ### 3) UE5 Target Keys
+
 ```json
 {
   "ue5": {
@@ -114,6 +122,7 @@ The following is a conceptual schema. Implementations SHOULD also publish a JSON
 ```
 
 ## Environment Variables
+
 Implementations SHOULD support overrides using environment variables.
 
 Recommended patterns:
@@ -125,24 +134,29 @@ Recommended patterns:
 - `MCP_AI_API_KEY`
 
 ## Validation
+
 - Config MUST be validated on startup.
 - Unknown keys SHOULD be rejected (or surfaced as warnings) to prevent silent misconfiguration.
 
 ## Operational Guidance
 
 ### Local Development
+
 - Use JSON logs to simplify debugging.
 - Keep artifact manifests enabled.
 
 ### CI
+
 - Force `ai.enabled=false` unless explicitly testing AI.
 - Use `--dry-run` flows to validate schemas and manifests.
 
 ### Shared Team Environments
+
 - Enforce tool allowlists and path allowlists.
 - Keep secrets in environment variables managed by the CI/CD system.
 
 ## Updating Configurations
+
 Implementations MAY provide:
 
 - `mcp.config get <key>`

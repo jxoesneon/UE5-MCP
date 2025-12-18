@@ -1,6 +1,7 @@
 # AI Integration in MCP
 
 ## Overview
+
 MCP supports **optional AI assistance** for planning and content generation. This document defines the 2025 contract for how AI is integrated, governed, and evaluated.
 
 AI is a productivity feature, not a trusted execution authority. In MCP:
@@ -11,6 +12,7 @@ AI is a productivity feature, not a trusted execution authority. In MCP:
 For the command/tool surface, see `commands.md` and `api_reference.md`.
 
 ## Design Principles
+
 - **Human intent, machine check**: AI outputs are suggestions until validated.
 - **Bounded compute**: enforce cost/latency budgets.
 - **Data minimization**: never send secrets or unnecessary project data to providers.
@@ -19,20 +21,24 @@ For the command/tool surface, see `commands.md` and `api_reference.md`.
 ## AI Roles in MCP
 
 ### 1) Planner
+
 Converts underspecified intent into a tool plan.
 
 - Input: natural language + minimal context
 - Output: structured tool calls validated by schemas
 
 ### 2) Generator
+
 Produces assets or specifications (textures/material text prompts, blueprint descriptions).
 
 - Output MUST be bounded and structured.
 
 ### 3) Critic (Optional)
+
 Evaluates outputs for policy/quality issues and suggests remediations.
 
 ## Provider Abstraction
+
 MCP MUST isolate provider-specific behavior behind an adapter.
 
 Minimum capabilities:
@@ -53,6 +59,7 @@ The provider adapter MUST support:
 - request/response logging with redaction
 
 ## Configuration
+
 AI settings are configured via `configurations.md`.
 
 Recommended config keys:
@@ -66,6 +73,7 @@ Secrets MUST be provided via environment variables (recommended):
 - `MCP_AI_API_KEY`
 
 ## Budgeting (Cost / Latency / Safety)
+
 Every run MUST be constrained by budgets.
 
 Recommended budgets:
@@ -81,6 +89,7 @@ When a budget is exceeded:
 - MCP SHOULD include partial artifacts and the `run_id`
 
 ## Prompt Hygiene & Template Versioning
+
 MCP MUST treat prompts as versioned templates.
 
 Guidelines:
@@ -93,6 +102,7 @@ Guidelines:
 ## Safety Controls
 
 ### Prompt Injection Resistance
+
 MCP MUST assume that any external text (assets metadata, imported docs, web content) may contain adversarial instructions.
 
 Mitigations:
@@ -102,16 +112,19 @@ Mitigations:
 - enforce tool allowlists and path allowlists
 
 ### Destructive Actions
+
 AI-driven plans MUST NOT enable destructive operations implicitly.
 
 - destructive tools require explicit opt-in via policy config
 - prefer `--dry-run` and user review for high-impact changes
 
 ### Privacy & IP
+
 - minimize what is sent to providers
 - consider an allowlist of what project data is permitted to leave the machine
 
 ## Evaluation (Evals) and Quality Gates
+
 AI behavior MUST be continuously evaluated.
 
 Recommended eval types:
@@ -130,11 +143,13 @@ Recommended harness:
 ## Example Workflows
 
 ### Scene Generation
+
 ```bash
 mcp.generate_scene "A cyberpunk city with neon lights" --dry-run
 ```
 
 ### Blueprint Automation
+
 ```bash
 mcp.generate_blueprint "A door opens when the player interacts" --dry-run
 ```

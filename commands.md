@@ -1,6 +1,7 @@
 # MCP Commands
 
 ## Overview
+
 This document specifies the **stable command surface** for MCP. These commands are treated as a contract: inputs are validated, outputs are structured, and side effects are auditable.
 
 This file defines the CLI layer. For programmatic interfaces, see `api_reference.md`.
@@ -8,22 +9,26 @@ This file defines the CLI layer. For programmatic interfaces, see `api_reference
 ## Conventions
 
 ### Naming
+
 - Command names are namespaced as `mcp.<tool_name>`.
 - Tool names MUST be stable; behavior changes MUST be versioned and documented.
 
 ### Targets
+
 Commands that execute inside Blender/UE5 MUST support explicit targeting (exact flags are implementation-defined):
 
 - Blender target: an existing Blender session or a launchable Blender project context.
 - UE target: a specific UE5 project and editor instance.
 
 ### Execution Modes
+
 Commands that mutate state SHOULD support:
 
 - `--dry-run` (no side effects; validate + produce plan/diff when possible)
 - `--apply` (perform side effects)
 
 ### Output Format
+
 By default, commands SHOULD emit a machine-readable JSON envelope.
 
 Minimum output envelope:
@@ -42,6 +47,7 @@ Minimum output envelope:
 ```
 
 ### Error Model
+
 Errors MUST be structured and include a stable `code`.
 
 ```json
@@ -73,6 +79,7 @@ Recommended error codes:
 ## 1. General MCP Commands
 
 ### `mcp.list_commands`
+
 - **Purpose**: Return the canonical list of tools, their versions, and short descriptions.
 - **Side effects**: None.
 
@@ -83,6 +90,7 @@ mcp.list_commands
 ```
 
 ### `mcp.help "command_name"`
+
 - **Purpose**: Provide detailed usage, schema, and examples for a specific tool.
 - **Side effects**: None.
 
@@ -93,15 +101,18 @@ mcp.help "mcp.generate_blueprint"
 ```
 
 ### `mcp.config get key`
+
 - **Purpose**: Read an effective configuration value.
 - **Side effects**: None.
 
 ### `mcp.config set key value`
+
 - **Purpose**: Update configuration (implementation-defined scope).
 - **Side effects**: Writes config.
 - **Safety**: MUST refuse to write secrets unless explicitly allowed.
 
 ### `mcp.reset_config`
+
 - **Purpose**: Restore configuration to defaults.
 - **Side effects**: Destructive write.
 - **Safety**: MUST require explicit confirmation.
@@ -109,6 +120,7 @@ mcp.help "mcp.generate_blueprint"
 ## 2. Blender-MCP Commands
 
 ### `mcp.generate_scene "description"`
+
 - **Purpose**: Generate a scene scaffold from a natural language description.
 - **Inputs**:
   - `description` (string)
@@ -129,6 +141,7 @@ mcp.generate_scene "A futuristic city with neon lights and flying cars."
 ```
 
 ### `mcp.add_object "object_type" x y z`
+
 - **Purpose**: Add an object to the active scene at a location.
 - **Inputs**:
   - `object_type` (string)
@@ -145,6 +158,7 @@ mcp.add_object "tree" 5.0 2.5 0.0
 ```
 
 ### `mcp.generate_texture "object_name" "texture_type"`
+
 - **Purpose**: Generate/apply a material or texture to an object.
 - **Inputs**:
   - `object_name` (string)
@@ -159,6 +173,7 @@ mcp.generate_texture "rock_model" "mossy stone"
 ```
 
 ### `mcp.export_asset "object_name" "format" "filepath"`
+
 - **Purpose**: Export an asset and produce an export manifest.
 - **Inputs**:
   - `object_name` (string)
@@ -182,6 +197,7 @@ mcp.export_asset "car_model" "fbx" "./exports/car_model.fbx"
 ## 3. Unreal Engine 5-MCP Commands
 
 ### `mcp.import_asset "manifest_path"`
+
 - **Purpose**: Import an exported asset into UE5 by consuming a Blender export manifest.
 - **Inputs**:
   - `manifest_path` (string)
@@ -201,6 +217,7 @@ mcp.import_asset "./exports/bridge.export_manifest.json" --dry-run
 ```
 
 ### `mcp.generate_terrain width height detail_level`
+
 - **Purpose**: Generate procedural terrain in UE5.
 - **Inputs**:
   - `width`, `height` (int)
@@ -218,6 +235,7 @@ mcp.generate_terrain 1000 1000 "high"
 ```
 
 ### `mcp.populate_level "asset_type" density`
+
 - **Purpose**: Populate a level with assets.
 - **Inputs**:
   - `asset_type` (string)
@@ -235,6 +253,7 @@ mcp.populate_level "trees" 500
 ```
 
 ### `mcp.generate_blueprint "logic_description"`
+
 - **Purpose**: Generate or modify Blueprint logic based on a behavioral spec.
 - **Inputs**:
   - `logic_description` (string)
@@ -249,6 +268,7 @@ mcp.generate_blueprint "A door that opens when the player interacts."
 ```
 
 ### `mcp.profile_performance "level_name"`
+
 - **Purpose**: Produce a performance report artifact for a level.
 - **Inputs**:
   - `level_name` (string)
@@ -262,10 +282,12 @@ mcp.profile_performance "desert_map"
 ```
 
 ### `mcp.debug_blueprint "blueprint_name"`
+
 - **Purpose**: Diagnose common Blueprint issues (validation, missing connections).
 - **Side effects**: None by default.
 
 ### `mcp.optimize_level`
+
 - **Purpose**: Apply safe optimizations guided by explicit budgets.
 - **Side effects**: Mutates project when executed with `--apply`.
 

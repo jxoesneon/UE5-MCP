@@ -1,6 +1,7 @@
 # MCP Automation
 
 ## Overview
+
 This document defines MCP automation semantics: how tools execute, how work is batched, and how side effects are controlled.
 
 It complements:
@@ -12,10 +13,12 @@ It complements:
 ## Automation Contracts
 
 ### Determinism
+
 - Tools that involve randomness SHOULD accept a `seed`.
 - The seed and tool version MUST be recorded in the run manifest.
 
 ### Idempotency
+
 - Tools SHOULD be idempotent when feasible.
 - If a tool is not idempotent, it MUST:
   - declare side effects
@@ -23,10 +26,12 @@ It complements:
   - emit sufficient provenance to understand what changed
 
 ### Safety Gates
+
 - Destructive behavior (overwrite/delete/import that replaces assets) MUST be explicit.
 - Policy MUST be enforced (tool allowlist and path allowlist).
 
 ### Artifact & Provenance Requirements
+
 Every run MUST generate:
 
 - a run manifest with `run_id`
@@ -42,6 +47,7 @@ AI-assisted steps MUST also record:
 ## Batching and Concurrency
 
 ### Batching
+
 Tools MAY batch operations to reduce overhead:
 
 - batch object placement
@@ -54,6 +60,7 @@ Batching MUST preserve debuggability:
 - stable ordering
 
 ### Concurrency
+
 Concurrency is constrained by target runtimes:
 
 - Blender and UE5 editor state are shared mutable resources.
@@ -63,6 +70,7 @@ Concurrency is constrained by target runtimes:
 ## Blender Automation
 
 ### Scene Generation (`mcp.generate_scene`)
+
 Automation goals:
 
 - produce a coherent object graph
@@ -75,12 +83,14 @@ Recommended invariants:
 - deterministic seed usage
 
 ### Texture/Material Automation (`mcp.generate_texture`)
+
 Automation goals:
 
 - deterministic mapping of textures/material slots
 - explicit reporting of created materials and dependencies
 
 ### Export Automation (`mcp.export_asset`)
+
 Automation goals:
 
 - produce both the exported file and an export manifest
@@ -90,6 +100,7 @@ Automation goals:
 ## UE5 Automation
 
 ### Terrain Automation (`mcp.generate_terrain`)
+
 Automation goals:
 
 - deterministic terrain creation via seed
@@ -97,12 +108,14 @@ Automation goals:
 - integration with PCG where applicable
 
 ### Population Automation (`mcp.populate_level`)
+
 Automation goals:
 
 - deterministic placement and stable ordering
 - performance budgeting (max instances, density caps)
 
 ### Blueprint Automation (`mcp.generate_blueprint`)
+
 Automation goals:
 
 - blueprint edits that compile
@@ -111,18 +124,21 @@ Automation goals:
 ## Rollback & Recovery
 
 ### Checkpointing
+
 High-impact operations SHOULD support checkpointing:
 
 - Blender: save file snapshot prior to apply
 - UE5: integrate with version control or changelist workflows
 
 ### Partial Failure
+
 If a batch operation fails:
 
 - MCP MUST return a structured error with partial results
 - MCP SHOULD produce artifacts for successful sub-operations
 
 ## Performance Budgets
+
 Tools SHOULD support explicit budgets:
 
 - max instances

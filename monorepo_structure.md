@@ -1,3 +1,6 @@
+# UE5-MCP Monorepo Structure
+
+```text
 UE5-MCP/
 │
 ├── modules/                       # Core functional modules
@@ -41,8 +44,7 @@ UE5-MCP/
 ├── pyproject.toml                  # Root workspace config (tooling + shared settings)
 ├── uv.lock                         # Reproducible dependency lock (preferred)
 └── README.md
-
-# Monorepo Structure (2025 Specification)
+```
 
 ## Purpose
 

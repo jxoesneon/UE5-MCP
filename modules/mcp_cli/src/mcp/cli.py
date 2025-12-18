@@ -10,11 +10,18 @@ from mcp_core.registry import registry
 from mcp_protocol.models import (
     AddObjectInput,
     ConfigGetInput,
+    DebugBlueprintInput,
     ExportAssetInput,
+    GenerateBlueprintInput,
     GenerateSceneInput,
+    GenerateTerrainInput,
     GenerateTextureInput,
     HelpInput,
+    ImportAssetInput,
     ListCommandsInput,
+    OptimizeLevelInput,
+    PopulateLevelInput,
+    ProfilePerformanceInput,
     ToolError,
     ToolResult,
     Vec3,
@@ -26,6 +33,13 @@ try:
     HAS_BLENDER = True
 except ImportError:
     HAS_BLENDER = False
+
+# Try to import UE5 tools
+try:
+    from mcp_target_ue5 import register_ue5_tools
+    HAS_UE5 = True
+except ImportError:
+    HAS_UE5 = False
 
 
 def _print_result(result: ToolResult | ToolError):
@@ -93,6 +107,82 @@ def _handle_export_asset(args: argparse.Namespace):
     _print_result(result)
 
 
+# --- UE5 Handlers ---
+
+def _handle_import_asset(args: argparse.Namespace):
+    inp = ImportAssetInput(
+        manifest_path=args.manifest_path,
+        dry_run=args.dry_run,
+        overwrite=args.overwrite
+    )
+    result = executor.execute("mcp.import_asset", inp)
+    _print_result(result)
+
+def _handle_generate_terrain(args: argparse.Namespace):
+    inp = GenerateTerrainInput(
+        width=args.width,
+        height=args.height,
+        detail_level=args.detail_level,
+        seed=args.seed,
+        dry_run=args.dry_run
+    )
+    result = executor.execute("mcp.generate_terrain", inp)
+    _print_result(result)
+
+def _handle_populate_level(args: argparse.Namespace):
+    inp = PopulateLevelInput(
+        asset_type=args.asset_type,
+        density=args.density,
+        seed=args.seed,
+        budget_max_instances=args.budget_max_instances,
+        dry_run=args.dry_run
+    )
+    result = executor.execute("mcp.populate_level", inp)
+    _print_result(result)
+
+def _handle_generate_blueprint(args: argparse.Namespace):
+    inp = GenerateBlueprintInput(
+        logic_description=args.logic_description,
+        dry_run=args.dry_run
+    )
+    result = executor.execute("mcp.generate_blueprint", inp)
+    _print_result(result)
+
+def _handle_profile_performance(args: argparse.Namespace):
+    inp = ProfilePerformanceInput(
+        level_name=args.level_name
+    )
+    result = executor.execute("mcp.profile_performance", inp)
+    _print_result(result)
+
+def _handle_optimize_level(args: argparse.Namespace):
+    inp = OptimizeLevelInput(
+        dry_run=args.dry_run,
+        budgets=None # CLI arg for budgets is complex, leaving None for now
+    )
+    result = executor.execute("mcp.optimize_level", inp)
+    _print_result(result)
+
+def _handle_debug_blueprint(args: argparse.Namespace):
+    inp = DebugBlueprintInput(
+        blueprint_name=args.blueprint_name
+    )
+    result = executor.execute("mcp.debug_blueprint", inp)
+    _print_result(result)
+
+def _handle_export_asset_ue5(args: argparse.Namespace):
+    inp = ExportAssetInput(
+        object_name=args.object_name,
+        format=args.format,
+        filepath=args.filepath,
+        include_textures=args.include_textures,
+        overwrite=args.overwrite,
+        dry_run=args.dry_run
+    )
+    result = executor.execute("mcp.export_asset_ue5", inp)
+    _print_result(result)
+
+
 def main(argv: list[str] | None = None) -> int:
     # Configure logging
     configure_logging()
@@ -103,6 +193,10 @@ def main(argv: list[str] | None = None) -> int:
     # Register Blender tools if available
     if HAS_BLENDER:
         register_blender_tools(registry)
+
+    # Register UE5 tools if available
+    if HAS_UE5:
+        register_ue5_tools(registry)
 
     parser = argparse.ArgumentParser(prog="mcp", description="UE5-MCP Command Line Interface")
     parser.add_argument("--version", action="store_true", help="Show version")
@@ -169,6 +263,53 @@ def main(argv: list[str] | None = None) -> int:
         p_export.add_argument("--overwrite", action="store_true", help="Overwrite existing files")
         p_export.add_argument("--dry-run", action="store_true", help="Simulate execution")
         p_export.set_defaults(func=_handle_export_asset)
+
+    if HAS_UE5:
+        # mcp.import_asset
+        p_import = subparsers.add_parser("import_asset", help="Import an asset")
+        p_import.add_argument("manifest_path", help="Path to export manifest")
+        p_import.add_argument("--overwrite", action="store_true", help="Overwrite existing assets")
+        p_import.add_argument("--dry-run", action="store_true", help="Simulate execution")
+        p_import.set_defaults(func=_handle_import_asset)
+
+        # mcp.generate_terrain
+        p_gen_terrain = subparsers.add_parser("generate_terrain", help="Generate terrain")
+        p_gen_terrain.add_argument("width", type=int, help="Width")
+        p_gen_terrain.add_argument("height", type=int, help="Height")
+        p_gen_terrain.add_argument("detail_level", choices=["low", "medium", "high"], help="Detail level")
+        p_gen_terrain.add_argument("--seed", type=int, help="Random seed")
+        p_gen_terrain.add_argument("--dry-run", action="store_true", help="Simulate execution")
+        p_gen_terrain.set_defaults(func=_handle_generate_terrain)
+
+        # mcp.populate_level
+        p_pop_level = subparsers.add_parser("populate_level", help="Populate level with assets")
+        p_pop_level.add_argument("asset_type", help="Asset type to spawn")
+        p_pop_level.add_argument("density", type=int, help="Density (count)")
+        p_pop_level.add_argument("--seed", type=int, help="Random seed")
+        p_pop_level.add_argument("--budget-max-instances", type=int, help="Max instances budget")
+        p_pop_level.add_argument("--dry-run", action="store_true", help="Simulate execution")
+        p_pop_level.set_defaults(func=_handle_populate_level)
+
+        # mcp.generate_blueprint
+        p_gen_bp = subparsers.add_parser("generate_blueprint", help="Generate Blueprint logic")
+        p_gen_bp.add_argument("logic_description", help="Description of logic")
+        p_gen_bp.add_argument("--dry-run", action="store_true", help="Simulate execution")
+        p_gen_bp.set_defaults(func=_handle_generate_blueprint)
+
+        # mcp.profile_performance
+        p_profile = subparsers.add_parser("profile_performance", help="Profile level performance")
+        p_profile.add_argument("level_name", help="Level name")
+        p_profile.set_defaults(func=_handle_profile_performance)
+
+        # mcp.optimize_level
+        p_opt = subparsers.add_parser("optimize_level", help="Optimize level")
+        p_opt.add_argument("--dry-run", action="store_true", help="Simulate execution")
+        p_opt.set_defaults(func=_handle_optimize_level)
+
+        # mcp.debug_blueprint
+        p_debug = subparsers.add_parser("debug_blueprint", help="Debug a blueprint")
+        p_debug.add_argument("blueprint_name", help="Blueprint name")
+        p_debug.set_defaults(func=_handle_debug_blueprint)
 
     args = parser.parse_args(argv)
 

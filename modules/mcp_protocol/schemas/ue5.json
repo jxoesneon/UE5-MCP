@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mcp.dev/schemas/ue5.json",
+  "title": "MCP UE5 Tool Schemas",
+  "definitions": {
+    "ImportAssetInput": {
+      "type": "object",
+      "properties": {
+        "manifest_path": { "type": "string" },
+        "dry_run": { "type": "boolean", "default": false },
+        "overwrite": { "type": "boolean", "default": false }
+      },
+      "required": ["manifest_path"]
+    },
+    "GenerateTerrainInput": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" },
+        "detail_level": { "type": "string", "enum": ["low", "medium", "high"] },
+        "seed": { "type": "integer" },
+        "dry_run": { "type": "boolean", "default": false }
+      },
+      "required": ["width", "height", "detail_level"]
+    },
+    "PopulateLevelInput": {
+      "type": "object",
+      "properties": {
+        "asset_type": { "type": "string" },
+        "density": { "type": "integer" },
+        "seed": { "type": "integer" },
+        "budget_max_instances": { "type": "integer" },
+        "dry_run": { "type": "boolean", "default": false }
+      },
+      "required": ["asset_type", "density"]
+    },
+    "GenerateBlueprintInput": {
+      "type": "object",
+      "properties": {
+        "logic_description": { "type": "string" },
+        "dry_run": { "type": "boolean", "default": false }
+      },
+      "required": ["logic_description"]
+    },
+    "ProfilePerformanceInput": {
+      "type": "object",
+      "properties": {
+        "level_name": { "type": "string" }
+      },
+      "required": ["level_name"]
+    },
+    "OptimizeLevelInput": {
+      "type": "object",
+      "properties": {
+        "dry_run": { "type": "boolean", "default": false },
+        "budgets": { "type": "object" }
+      }
+    },
+    "DebugBlueprintInput": {
+      "type": "object",
+      "properties": {
+        "blueprint_name": { "type": "string" }
+      },
+      "required": ["blueprint_name"]
+    }
+  }
+}

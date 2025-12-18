@@ -24,7 +24,7 @@ jobs:
 
       - name: Python smoke check
         run: |
-          python3 -m compileall scripts
+          python3 -m compileall scripts modules
 
       - name: Docs contract validation
         run: |
@@ -69,3 +69,39 @@ jobs:
       - name: Lint Markdown
         run: |
           markdownlint-cli2 "**/*.md" "#node_modules" "#venv" "#.venv"
+
+  python_quality:
+    name: Python quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tooling
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install ruff mypy pytest
+
+      - name: Ruff
+        run: |
+          ruff check .
+
+      - name: Mypy
+        run: |
+          mypy \
+            modules/mcp_protocol/src \
+            modules/mcp_core/src \
+            modules/mcp_cli/src \
+            modules/mcp_target_blender/src \
+            modules/mcp_target_ue5/src
+
+      - name: Pytest
+        env:
+          PYTHONPATH: modules/mcp_protocol/src:modules/mcp_core/src:modules/mcp_cli/src:modules/mcp_target_blender/src:modules/mcp_target_ue5/src
+        run: |
+          pytest

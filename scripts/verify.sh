@@ -1,25 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VENV_DIR="${VENV_DIR:-.venv}"
-PYTHON_BIN="${PYTHON_BIN:-python3}"
-
-if [ ! -d "$VENV_DIR" ]; then
-  "$PYTHON_BIN" -m venv "$VENV_DIR"
+if ! command -v uv >/dev/null 2>&1; then
+  echo "uv is not installed. Install it with: brew install uv" >&2
+  exit 1
 fi
 
-VENV_PY="$VENV_DIR/bin/python"
+uv lock --check
+uv sync --locked
 
-"$VENV_PY" -m pip install --upgrade pip
-"$VENV_PY" -m pip install pre-commit ruff mypy pytest
+uv run --locked python -m compileall scripts modules >/dev/null
 
-"$VENV_PY" -m compileall scripts modules >/dev/null
+uv run --locked python scripts/check_docs_contract.py
 
-"$VENV_PY" scripts/check_docs_contract.py
+uv run --locked ruff check .
 
-"$VENV_PY" -m ruff check .
-
-"$VENV_PY" -m mypy \
+uv run --locked mypy \
   modules/mcp_protocol/src \
   modules/mcp_core/src \
   modules/mcp_cli/src \
@@ -27,7 +23,7 @@ VENV_PY="$VENV_DIR/bin/python"
   modules/mcp_target_ue5/src
 
 PYTHONPATH=modules/mcp_protocol/src:modules/mcp_core/src:modules/mcp_cli/src:modules/mcp_target_blender/src:modules/mcp_target_ue5/src \
-  "$VENV_PY" -m pytest
+  uv run --locked pytest
 
 if command -v npx >/dev/null 2>&1; then
   npx --yes markdownlint-cli2@0.20.0 "**/*.md" "#node_modules" "#venv" "#.venv"
@@ -36,4 +32,4 @@ else
   exit 1
 fi
 
-"$VENV_PY" -m pre_commit run --all-files
+uv run --locked pre-commit run --all-files

@@ -1,3 +1,19 @@
+[project]
+name = "ue5-mcp"
+version = "0.0.0"
+description = "UE5 + Blender automation via Model Context Protocol (spec-first)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[dependency-groups]
+dev = [
+  "mypy",
+  "pre-commit",
+  "pytest",
+  "ruff",
+]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

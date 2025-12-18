@@ -27,7 +27,7 @@ MCP_PATHS_ALLOWED = {
 def _iter_markdown_files() -> list[Path]:
     md_files: list[Path] = []
     for path in REPO_ROOT.rglob("*.md"):
-        if any(part in {".git", "venv", "node_modules"} for part in path.parts):
+        if any(part in {".git", "venv", ".venv", "node_modules"} for part in path.parts):
             continue
         md_files.append(path)
     return sorted(md_files)

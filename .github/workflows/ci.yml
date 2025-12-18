@@ -17,18 +17,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      - name: Check lockfile
+        run: |
+          uv lock --check
+
+      - name: Sync environment
+        run: |
+          uv sync --locked
+
       - name: Python smoke check
         run: |
-          python3 -m compileall scripts modules
+          uv run --locked python -m compileall scripts modules
 
       - name: Docs contract validation
         run: |
-          python3 scripts/check_docs_contract.py
+          uv run --locked python scripts/check_docs_contract.py
 
   precommit:
     name: Pre-commit
@@ -37,19 +50,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install pre-commit
+      - name: Check lockfile
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install pre-commit
+          uv lock --check
+
+      - name: Sync environment
+        run: |
+          uv sync --locked
 
       - name: Run pre-commit
         run: |
-          pre-commit run --all-files
+          uv run --locked pre-commit run --all-files
 
   markdownlint:
     name: Markdown lint
@@ -77,23 +98,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.11"
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install tooling
+      - name: Check lockfile
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install ruff mypy pytest
+          uv lock --check
+
+      - name: Sync environment
+        run: |
+          uv sync --locked
 
       - name: Ruff
         run: |
-          ruff check .
+          uv run --locked ruff check .
 
       - name: Mypy
         run: |
-          mypy \
+          uv run --locked mypy \
             modules/mcp_protocol/src \
             modules/mcp_core/src \
             modules/mcp_cli/src \
@@ -104,4 +133,4 @@ jobs:
         env:
           PYTHONPATH: modules/mcp_protocol/src:modules/mcp_core/src:modules/mcp_cli/src:modules/mcp_target_blender/src:modules/mcp_target_ue5/src
         run: |
-          pytest
+          uv run --locked pytest

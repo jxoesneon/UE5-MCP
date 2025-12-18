@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 import sys
-from typing import Any
+from typing import Any, cast
 
 from .base import BlenderTransport
 
@@ -29,7 +29,7 @@ class StdioTransport(BlenderTransport):
             "scripts",
             "blender_server.py"
         )
-        
+
         if not os.path.exists(script_path):
             # Fallback for dev environment or differing install layout
             # Try to find it relative to module root if not found in package
@@ -73,7 +73,7 @@ class StdioTransport(BlenderTransport):
         """
         if not self._process:
             self.connect()
-            
+
         if not self._process or not self._process.stdin or not self._process.stdout:
              raise RuntimeError("Blender process not connected")
 
@@ -82,22 +82,22 @@ class StdioTransport(BlenderTransport):
             "params": params,
             "id": 1 # Simple ID for now
         }
-        
+
         try:
             self._process.stdin.write(json.dumps(request) + "\n")
             self._process.stdin.flush()
-            
+
             response_line = self._process.stdout.readline()
             if not response_line:
                 raise RuntimeError("Blender process closed connection unexpectedly")
-                
+
             response = json.loads(response_line)
-            
+
             if response.get("status") == "error":
                 raise RuntimeError(f"Blender error: {response.get('error')}")
-                
-            return response
-            
+
+            return cast(dict[str, Any], response)
+
         except BrokenPipeError:
             self._process = None
             raise RuntimeError("Blender process pipe broken")

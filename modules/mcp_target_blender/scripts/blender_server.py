@@ -1,5 +1,5 @@
-import sys
 import json
+import sys
 import traceback
 
 # Ensure we can import bpy
@@ -20,28 +20,28 @@ def handle_generate_scene(params):
     Clear the scene and set up a basic environment.
     """
     log(f"Generating scene: {params}")
-    
+
     # Clear existing objects
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
-    
+
     # Add a floor plane
     bpy.ops.mesh.primitive_plane_add(size=10, location=(0, 0, 0))
     plane = bpy.context.active_object
     plane.name = "Floor"
-    
+
     # Add a light
     bpy.ops.object.light_add(type='SUN', location=(5, 5, 10))
-    
+
     # Add a camera
     bpy.ops.object.camera_add(location=(10, -10, 8), rotation=(0.8, 0, 0.8))
     bpy.context.scene.camera = bpy.context.active_object
-    
+
     seed = params.get("seed")
     if seed is not None:
         import random
         random.seed(seed)
-        
+
     return {
         "message": f"Scene generated: {params.get('description')}",
         "objects_count": len(bpy.data.objects)
@@ -55,7 +55,7 @@ def handle_add_object(params):
     obj_type = params.get("object_type", "Cube").lower()
     location = params.get("location", {"x": 0, "y": 0, "z": 0})
     loc_vec = (location.get("x", 0), location.get("y", 0), location.get("z", 0))
-    
+
     if "cube" in obj_type:
         bpy.ops.mesh.primitive_cube_add(location=loc_vec)
     elif "sphere" in obj_type:
@@ -71,10 +71,10 @@ def handle_add_object(params):
     else:
         # Default to cube
         bpy.ops.mesh.primitive_cube_add(location=loc_vec)
-        
+
     obj = bpy.context.active_object
     obj.name = f"{obj_type.capitalize()}_{len(bpy.data.objects)}"
-    
+
     return {
         "message": f"Added object: {obj.name}",
         "object_name": obj.name,
@@ -88,27 +88,27 @@ def handle_generate_texture(params):
     log(f"Generating texture: {params}")
     object_name = params.get("object_name")
     texture_type = params.get("texture_type", "diffuse")
-    
+
     obj = bpy.data.objects.get(object_name)
     if not obj:
         raise ValueError(f"Object '{object_name}' not found")
-        
+
     if not obj.data.materials:
         mat = bpy.data.materials.new(name=f"{object_name}_Mat")
         obj.data.materials.append(mat)
     else:
         mat = obj.data.materials[0]
-        
+
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
     bsdf = nodes.get("Principled BSDF")
-    
+
     import random
     color = (random.random(), random.random(), random.random(), 1)
-    
+
     if bsdf:
         bsdf.inputs["Base Color"].default_value = color
-        
+
     return {
         "message": f"Generated texture '{texture_type}' for '{object_name}'",
         "color": color
@@ -122,10 +122,10 @@ def handle_export_asset(params):
     filepath = params.get("filepath")
     fmt = params.get("format", "fbx").lower()
     object_name = params.get("object_name")
-    
+
     if not filepath:
         raise ValueError("Filepath is required")
-        
+
     # Select object if specified
     if object_name:
         bpy.ops.object.select_all(action='DESELECT')
@@ -135,7 +135,7 @@ def handle_export_asset(params):
             bpy.context.view_layer.objects.active = obj
         else:
             log(f"Warning: Object '{object_name}' not found, exporting selection/scene")
-    
+
     if fmt == "fbx":
         bpy.ops.export_scene.fbx(filepath=filepath, use_selection=bool(object_name))
     elif fmt == "obj":
@@ -144,7 +144,7 @@ def handle_export_asset(params):
         bpy.ops.export_scene.gltf(filepath=filepath, use_selection=bool(object_name))
     else:
         raise ValueError(f"Unsupported format: {fmt}")
-        
+
     return {
         "message": f"Exported to {filepath}",
         "format": fmt
@@ -152,20 +152,20 @@ def handle_export_asset(params):
 
 def main():
     log("Server started. Waiting for commands on stdin...")
-    
+
     while True:
         try:
             line = sys.stdin.readline()
             if not line:
                 break
-                
+
             request = json.loads(line)
             command = request.get("command")
             params = request.get("params", {})
             req_id = request.get("id")
-            
+
             response = {"id": req_id, "status": "ok", "data": None}
-            
+
             try:
                 if command == "ping":
                     response["data"] = "pong"
@@ -184,11 +184,11 @@ def main():
                 traceback.print_exc(file=sys.stderr)
                 response["status"] = "error"
                 response["error"] = str(e)
-            
+
             # Write response
             sys.stdout.write(json.dumps(response) + "\n")
             sys.stdout.flush()
-            
+
         except json.JSONDecodeError:
             log("Invalid JSON received")
         except Exception as e:

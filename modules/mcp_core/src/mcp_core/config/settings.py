@@ -35,6 +35,11 @@ class AIConfig(BaseSettings):
     provider: str = "openai"
     budget: AIBudgetConfig = Field(default_factory=AIBudgetConfig)
 
+class SafetyConfig(BaseSettings):
+    block_injection_patterns: bool = True
+    allowed_tools: list[str] | None = None
+    deny_tools: list[str] = ["os.system", "subprocess.call", "eval", "exec"]
+
 class BlenderSceneGenerationConfig(BaseSettings):
     default_style: str = "realistic"
     object_variation: bool = True
@@ -81,6 +86,7 @@ class McpSettings(BaseSettings):
     artifacts: ArtifactsConfig = Field(default_factory=ArtifactsConfig)
     policy: PolicyConfig = Field(default_factory=PolicyConfig)
     ai: AIConfig = Field(default_factory=AIConfig)
+    safety: SafetyConfig = Field(default_factory=SafetyConfig)
     blender: BlenderConfig = Field(default_factory=BlenderConfig)
     ue5: UE5Config = Field(default_factory=UE5Config)
 

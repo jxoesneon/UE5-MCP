@@ -33,6 +33,21 @@ class ToolError(BaseModel):
     status: Literal["error"] = "error"
     error: ToolErrorDetail
 
+class RunManifest(BaseModel):
+    run_id: str
+    request_id: str
+    tool_name: str
+    status: str
+    start_time: str
+    end_time: str
+    duration_seconds: float
+    inputs: dict[str, Any]
+    outputs: dict[str, Any] | None = None
+    error: dict[str, Any] | None = None
+    artifacts: list[Artifact] = Field(default_factory=list)
+    config_hash: str | None = None
+    tool_version: str | None = None
+
 # --- Blender Tool Inputs ---
 
 class Vec3(BaseModel):

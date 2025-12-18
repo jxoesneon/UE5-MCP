@@ -4,7 +4,8 @@ import sys
 
 from mcp_core import __version__ as core_version
 from mcp_core import register_system_tools
-from mcp_core.registry import registry
+from mcp_core.execution import executor
+from mcp_core.observability import configure_logging
 from mcp_protocol import (
     ConfigGetInput,
     HelpInput,
@@ -20,37 +21,25 @@ def _print_result(result: ToolResult | ToolError):
     print(json.dumps(result.model_dump(), indent=2))
 
 def _handle_list_commands(args: argparse.Namespace):
-    tool = registry.get_tool("mcp.list_commands")
-    if not tool:
-        print("Error: mcp.list_commands tool not found.", file=sys.stderr)
-        sys.exit(1)
-
     # Input is empty
     inp = ListCommandsInput()
-    result = tool.handler(inp)
+    result = executor.execute("mcp.list_commands", inp)
     _print_result(result)
 
 def _handle_help(args: argparse.Namespace):
-    tool = registry.get_tool("mcp.help")
-    if not tool:
-        print("Error: mcp.help tool not found.", file=sys.stderr)
-        sys.exit(1)
-
     inp = HelpInput(command_name=args.command)
-    result = tool.handler(inp)
+    result = executor.execute("mcp.help", inp)
     _print_result(result)
 
 def _handle_config_get(args: argparse.Namespace):
-    tool = registry.get_tool("mcp.config_get")
-    if not tool:
-        print("Error: mcp.config_get tool not found.", file=sys.stderr)
-        sys.exit(1)
-
     inp = ConfigGetInput(key=args.key)
-    result = tool.handler(inp)
+    result = executor.execute("mcp.config_get", inp)
     _print_result(result)
 
 def main(argv: list[str] | None = None) -> int:
+    # Configure logging
+    configure_logging()
+
     # Ensure system tools are registered
     register_system_tools()
 

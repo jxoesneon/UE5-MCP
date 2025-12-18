@@ -31,7 +31,7 @@ class HttpTransport(UE5Transport):
         """
         # In a real implementation:
         # requests.post(f"{self.base_url}/command", json={"command": command, "params": params})
-        
+
         return {
             "status": "ok",
             "data": f"Executed {command} via HttpTransport"

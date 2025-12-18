@@ -114,7 +114,7 @@ def test_debug_blueprint(context_setup) -> None:
 def test_transport_instantiation() -> None:
     transport = HttpTransport(host="localhost", port=8080)
     assert transport.base_url == "http://localhost:8080"
-    
+
     # Test stub methods
     transport.connect()
     resp = transport.send_command("ping", {})

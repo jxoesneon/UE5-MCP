@@ -97,3 +97,21 @@ class OptimizeLevelInput(BaseModel):
 
 class DebugBlueprintInput(BaseModel):
     blueprint_name: str
+
+# --- System Tool Inputs ---
+
+class ListCommandsInput(BaseModel):
+    pass
+
+class HelpInput(BaseModel):
+    command_name: str
+
+class ConfigGetInput(BaseModel):
+    key: str
+
+class ConfigSetInput(BaseModel):
+    key: str
+    value: Any
+
+class ResetConfigInput(BaseModel):
+    confirm: bool = False

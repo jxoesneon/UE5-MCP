@@ -18,4 +18,4 @@ def test_cli_version_flag(capsys) -> None:
     captured = capsys.readouterr()
 
     assert rc == 0
-    assert captured.out.strip() == "0.0.0"
+    assert captured.out.strip() == "0.2.0"

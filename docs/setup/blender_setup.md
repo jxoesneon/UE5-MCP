@@ -8,6 +8,17 @@ This guide explains how to set up MCP to work with Blender.
 - **Python 3.11+** installed
 - **UE5-MCP** installed (see main README.md)
 
+## No Addon Required
+
+**MCP handles everything automatically.** Unlike traditional Blender addons, you don't need to install anything inside Blender. When you run an MCP command:
+
+1. MCP automatically spawns Blender in background mode
+2. MCP loads its bundled server script (`blender_server.py`) into Blender
+3. Commands are executed via Blender's Python API (`bpy`)
+4. Results are returned to MCP
+
+This means you just need Blender installed - MCP does the rest.
+
 ## How It Works
 
 MCP communicates with Blender using a **stdio transport**:

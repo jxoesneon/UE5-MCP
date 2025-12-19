@@ -17,10 +17,10 @@ def create_ai_client() -> AIClient:
         pass
 
     provider: AIProvider
-    
+
     # Simple registry dispatch
     provider_name = settings.ai.provider.lower()
-    
+
     if provider_name == "openai":
         provider = OpenAIProvider()
     else:

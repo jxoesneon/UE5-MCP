@@ -33,11 +33,11 @@ class OpenAIProvider(AIProvider):
         try:
             # Default to gpt-4o-mini if not specified, assuming it's a cost-effective default
             model = request.model or "gpt-4o-mini"
-            
+
             messages: list[dict[str, str]] = []
             if request.system_prompt:
                 messages.append({"role": "system", "content": request.system_prompt})
-            
+
             messages.append({"role": "user", "content": request.prompt})
 
             response = cast(ChatCompletion, await self.client.chat.completions.create(
@@ -61,7 +61,7 @@ class OpenAIProvider(AIProvider):
                 # Very rough placeholder pricing
                 input_cost_per_1k = 0.00015
                 output_cost_per_1k = 0.0006
-                
+
                 cost = (response.usage.prompt_tokens / 1000 * input_cost_per_1k) + \
                        (response.usage.completion_tokens / 1000 * output_cost_per_1k)
 
@@ -81,14 +81,14 @@ class OpenAIProvider(AIProvider):
             )
 
         except OpenAIError as e:
-            # Wrap or re-raise as a provider-agnostic error if needed, 
+            # Wrap or re-raise as a provider-agnostic error if needed,
             # but for now letting it bubble up or catching in client is fine.
             raise RuntimeError(f"OpenAI API error: {str(e)}") from e
 
     async def generate_image(self, request: ImageGenerationRequest) -> ImageGenerationResponse:
         try:
             model = request.model or "dall-e-3"
-            
+
             response = await self.client.images.generate(
                 model=model,
                 prompt=request.prompt,
@@ -98,10 +98,10 @@ class OpenAIProvider(AIProvider):
             )
 
             urls = [item.url for item in response.data if item.url]
-            
+
             # DALL-E 3 standard cost
             cost = 0.04 * request.n # $0.04 per image standard
-            
+
             return ImageGenerationResponse(
                 urls=urls,
                 usage=AIModelUsage(

@@ -56,7 +56,11 @@ class BlenderExportConfig(BaseSettings):
     axis: str = "-Z+Y"
     scale: float = 1.0
 
+class BlenderTransportConfig(BaseSettings):
+    executable_path: str = "blender"
+
 class BlenderConfig(BaseSettings):
+    transport: BlenderTransportConfig = Field(default_factory=BlenderTransportConfig)
     scene_generation: BlenderSceneGenerationConfig = Field(default_factory=BlenderSceneGenerationConfig)
     asset_processing: BlenderAssetProcessingConfig = Field(default_factory=BlenderAssetProcessingConfig)
     export: BlenderExportConfig = Field(default_factory=BlenderExportConfig)
@@ -76,7 +80,12 @@ class UE5PerformanceConfig(BaseSettings):
     physics_enabled: bool = True
     budgets: UE5PerformanceBudgetsConfig = Field(default_factory=UE5PerformanceBudgetsConfig)
 
+class UE5TransportConfig(BaseSettings):
+    host: str = "localhost"
+    port: int = 8080
+
 class UE5Config(BaseSettings):
+    transport: UE5TransportConfig = Field(default_factory=UE5TransportConfig)
     level_design: UE5LevelDesignConfig = Field(default_factory=UE5LevelDesignConfig)
     performance: UE5PerformanceConfig = Field(default_factory=UE5PerformanceConfig)
 

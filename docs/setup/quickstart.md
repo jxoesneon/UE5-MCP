@@ -75,11 +75,13 @@ $env:OPENAI_API_KEY="your-api-key-here"
 
 ### Test Blender Connection
 
+**No addon installation needed** - MCP automatically manages Blender:
+
 ```bash
 # Dry-run (doesn't need Blender running)
 mcp blender generate-scene "A red cube" --dry-run
 
-# Real execution (spawns Blender)
+# Real execution (MCP spawns Blender automatically)
 mcp blender generate-scene "A red cube"
 ```
 

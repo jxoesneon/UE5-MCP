@@ -121,6 +121,110 @@ The following is a conceptual schema. Implementations SHOULD also publish a JSON
 }
 ```
 
+### 4) Transport Configuration
+
+Transport settings control how MCP connects to Blender and UE5.
+
+**Blender Transport (Stdio):**
+
+```json
+{
+  "blender": {
+    "transport": {
+      "type": "stdio",
+      "executable_path": "blender",
+      "startup_timeout": 30,
+      "command_timeout": 60
+    }
+  }
+}
+```
+
+| Key                | Type   | Default       | Description                            |
+|--------------------|--------|---------------|----------------------------------------|
+| `executable_path`  | string | `"blender"`   | Path to Blender executable             |
+| `startup_timeout`  | int    | `30`          | Seconds to wait for Blender to start   |
+| `command_timeout`  | int    | `60`          | Seconds to wait for command completion |
+
+**UE5 Transport (HTTP):**
+
+```json
+{
+  "ue5": {
+    "transport": {
+      "type": "http",
+      "host": "localhost",
+      "port": 8080,
+      "timeout": 30
+    }
+  }
+}
+```
+
+| Key       | Type   | Default       | Description                       |
+|-----------|--------|---------------|-----------------------------------|
+| `host`    | string | `"localhost"` | UE5 MCP server host               |
+| `port`    | int    | `8080`        | UE5 MCP server port               |
+| `timeout` | int    | `30`          | HTTP request timeout in seconds   |
+
+## Complete Configuration Example
+
+Here is a complete example showing both config files:
+
+**`~/.mcp/blender_mcp_config.json`:**
+
+```json
+{
+  "protocol_version": "1.0",
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "output": "stdout"
+  },
+  "artifacts": {
+    "root": "~/.mcp/artifacts",
+    "write_manifests": true
+  },
+  "policy": {
+    "allow_destructive": false,
+    "allowed_paths": ["~/projects", "/tmp/mcp"],
+    "tool_allowlist": []
+  },
+  "ai": {
+    "enabled": true,
+    "provider": "openai",
+    "budget": {
+      "max_requests_per_run": 20,
+      "max_total_tokens": 20000,
+      "max_total_cost_usd": 5.0
+    }
+  },
+  "blender": {
+    "transport": {
+      "executable_path": "blender",
+      "startup_timeout": 30,
+      "command_timeout": 60
+    },
+    "export": {
+      "default_format": "fbx",
+      "axis": "-Z+Y",
+      "scale": 1.0
+    }
+  },
+  "ue5": {
+    "transport": {
+      "host": "localhost",
+      "port": 8080,
+      "timeout": 30
+    },
+    "level_design": {
+      "default_terrain_size": [1000, 1000],
+      "default_seed": 0
+    }
+  }
+}
+```
+
 ## Environment Variables
 
 Implementations SHOULD support overrides using environment variables.

@@ -46,9 +46,23 @@ def handle_generate_scene(params):
         import random
         random.seed(seed)
 
+    # Process explicit object list if provided
+    created_objects = []
+    objects_data = params.get("objects", [])
+    if objects_data:
+        for obj_data in objects_data:
+            # Re-use add_object logic or call it directly
+            # We map the dictionary to what handle_add_object expects
+            try:
+                result = handle_add_object(obj_data)
+                created_objects.append(result["object_name"])
+            except Exception as e:
+                log(f"Failed to add object {obj_data}: {e}")
+
     return {
         "message": f"Scene generated: {params.get('description')}",
-        "objects_count": len(bpy.data.objects)
+        "objects_count": len(bpy.data.objects),
+        "created_objects": created_objects
     }
 
 def handle_add_object(params):
@@ -105,7 +119,33 @@ def handle_generate_texture(params):
 
     mat.use_nodes = True
     nodes = mat.node_tree.nodes
+    links = mat.node_tree.links
     bsdf = nodes.get("Principled BSDF")
+
+    # Clear existing nodes connected to Base Color if any, or just add new ones
+    # For simplicity, we just add.
+
+    texture_path = params.get("texture_path")
+    if texture_path:
+        log(f"Loading texture from {texture_path}")
+        try:
+            tex_image_node = nodes.new('ShaderNodeTexImage')
+            tex_image_node.location = (-300, 0)
+
+            # Load image
+            image = bpy.data.images.load(texture_path)
+            tex_image_node.image = image
+
+            if bsdf:
+                links.new(tex_image_node.outputs['Color'], bsdf.inputs['Base Color'])
+
+            return {
+                "message": f"Applied texture from '{texture_path}' to '{object_name}'",
+                "texture_path": texture_path
+            }
+        except Exception as e:
+            log(f"Failed to load texture: {e}")
+            # Fallback to random color
 
     import random
     seed = params.get("seed")

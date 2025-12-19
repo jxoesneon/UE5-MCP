@@ -21,11 +21,15 @@ from .tools import (
 
 __all__ = ["__version__", "register_ue5_tools"]
 
-__version__ = "0.7.0"
+__version__ = "1.0.0"
 
 
 def register_ue5_tools(registry: ToolRegistry) -> None:
     """Register UE5-related tools with the registry."""
+    # Check if already registered to make this function idempotent
+    if registry.get_tool("mcp.import_asset"):
+        return
+
     registry.register(
         name="mcp.import_asset",
         description="Import an asset from an export manifest into UE5.",

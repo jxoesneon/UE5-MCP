@@ -106,6 +106,7 @@ class GenerateBlueprintInput(BaseModel):
 
 class ProfilePerformanceInput(BaseModel):
     level_name: str
+    dry_run: bool = False
 
 class OptimizeLevelInput(BaseModel):
     dry_run: bool = False
@@ -113,6 +114,7 @@ class OptimizeLevelInput(BaseModel):
 
 class DebugBlueprintInput(BaseModel):
     blueprint_name: str
+    dry_run: bool = False
 
 # --- System Tool Inputs ---
 

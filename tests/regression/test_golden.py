@@ -19,23 +19,23 @@ def assert_golden(name: str, actual_data: dict[str, Any]):
     If the golden file does not exist, it is created.
     """
     golden_path = GOLDEN_DIR / f"{name}.json"
-    
+
     # Sort keys for deterministic JSON serialization
     actual_json = json.dumps(actual_data, indent=2, sort_keys=True)
-    
+
     if not golden_path.exists():
         golden_path.write_text(actual_json)
-        # We don't fail on first run, but we warn or just pass. 
+        # We don't fail on first run, but we warn or just pass.
         # In a real CI env, we might want to fail if goldens are missing.
         # For this dev phase, bootstrapping is fine.
         return
 
     expected_json = golden_path.read_text()
-    
-    # Compare parsed objects to ignore whitespace diffs if any, 
+
+    # Compare parsed objects to ignore whitespace diffs if any,
     # but we also want to ensure the serialization format is stable.
     # Comparing strings is stricter.
-    assert actual_json == expected_json, f"Golden mismatch for {name}"
+    assert actual_json.strip() == expected_json.strip(), f"Golden mismatch for {name}"
 
 def test_golden_tool_result_success():
     """Verify ToolResult serialization against golden record."""

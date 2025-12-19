@@ -12,10 +12,12 @@ from mcp_protocol import (
 )
 
 from .config.settings import settings
+from .observability.context import get_current_context
 from .registry import ToolRegistry, registry
 
 
 def list_commands_handler(input: ListCommandsInput) -> ToolResult | ToolError:
+    ctx = get_current_context()
     tools = registry.list_tools()
     result = {
         "tools": [
@@ -29,18 +31,19 @@ def list_commands_handler(input: ListCommandsInput) -> ToolResult | ToolError:
     }
     return ToolResult(
         tool="mcp.list_commands",
-        request_id="cli", # TODO: pass through from context
-        run_id="cli", # TODO: generate
+        request_id=ctx.request_id or "",
+        run_id=ctx.run_id or "",
         result=result
     )
 
 def help_handler(input: HelpInput) -> ToolResult | ToolError:
+    ctx = get_current_context()
     tool = registry.get_tool(input.command_name)
     if not tool:
         return ToolError(
             tool="mcp.help",
-            request_id="cli",
-            run_id="cli",
+            request_id=ctx.request_id or "",
+            run_id=ctx.run_id or "",
             error=ToolErrorDetail(
                 code="TOOL_NOT_FOUND",
                 message=f"Tool '{input.command_name}' not found."
@@ -54,12 +57,13 @@ def help_handler(input: HelpInput) -> ToolResult | ToolError:
     }
     return ToolResult(
         tool="mcp.help",
-        request_id="cli",
-        run_id="cli",
+        request_id=ctx.request_id or "",
+        run_id=ctx.run_id or "",
         result=result
     )
 
 def config_get_handler(input: ConfigGetInput) -> ToolResult | ToolError:
+    ctx = get_current_context()
     # Basic dot-notation access
     keys = input.key.split(".")
     value: Any = settings
@@ -72,10 +76,10 @@ def config_get_handler(input: ConfigGetInput) -> ToolResult | ToolError:
             else:
                 raise KeyError(k)
     except (KeyError, AttributeError):
-         return ToolError(
+        return ToolError(
             tool="mcp.config_get",
-            request_id="cli",
-            run_id="cli",
+            request_id=ctx.request_id or "",
+            run_id=ctx.run_id or "",
             error=ToolErrorDetail(
                 code="CONFIG_KEY_NOT_FOUND",
                 message=f"Key '{input.key}' not found in configuration."
@@ -88,18 +92,19 @@ def config_get_handler(input: ConfigGetInput) -> ToolResult | ToolError:
 
     return ToolResult(
         tool="mcp.config_get",
-        request_id="cli",
-        run_id="cli",
+        request_id=ctx.request_id or "",
+        run_id=ctx.run_id or "",
         result={"key": input.key, "value": value}
     )
 
 # Note: Config Set/Reset are placeholders as BaseSettings is immutable by default
 # and typical usage is env vars or files. Runtime modification would require a mutable backing store.
 def config_set_handler(input: ConfigSetInput) -> ToolResult | ToolError:
+    ctx = get_current_context()
     return ToolError(
         tool="mcp.config_set",
-        request_id="cli",
-        run_id="cli",
+        request_id=ctx.request_id or "",
+        run_id=ctx.run_id or "",
         error=ToolErrorDetail(
             code="NOT_IMPLEMENTED",
             message="Runtime configuration modification is not yet supported. Use environment variables or config files."
@@ -107,10 +112,21 @@ def config_set_handler(input: ConfigSetInput) -> ToolResult | ToolError:
     )
 
 def reset_config_handler(input: ResetConfigInput) -> ToolResult | ToolError:
+    ctx = get_current_context()
+    if not input.confirm:
+        return ToolError(
+            tool="mcp.reset_config",
+            request_id=ctx.request_id or "",
+            run_id=ctx.run_id or "",
+            error=ToolErrorDetail(
+                code="CONFIRMATION_REQUIRED",
+                message="Use --confirm to reset configuration."
+            )
+        )
     return ToolError(
         tool="mcp.reset_config",
-        request_id="cli",
-        run_id="cli",
+        request_id=ctx.request_id or "",
+        run_id=ctx.run_id or "",
         error=ToolErrorDetail(
             code="NOT_IMPLEMENTED",
             message="Runtime configuration reset is not yet supported."
@@ -118,6 +134,10 @@ def reset_config_handler(input: ResetConfigInput) -> ToolResult | ToolError:
     )
 
 def register_system_tools(registry: ToolRegistry = registry):
+    # Check if already registered to make this function idempotent
+    if registry.get_tool("mcp.list_commands"):
+        return
+
     registry.register(
         name="mcp.list_commands",
         description="List all available tools and their schemas.",

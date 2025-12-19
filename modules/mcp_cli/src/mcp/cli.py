@@ -10,6 +10,7 @@ from mcp_core.registry import registry
 from mcp_protocol.models import (
     AddObjectInput,
     ConfigGetInput,
+    ConfigSetInput,
     DebugBlueprintInput,
     ExportAssetInput,
     GenerateBlueprintInput,
@@ -22,6 +23,7 @@ from mcp_protocol.models import (
     OptimizeLevelInput,
     PopulateLevelInput,
     ProfilePerformanceInput,
+    ResetConfigInput,
     ToolError,
     ToolResult,
     Vec3,
@@ -61,6 +63,16 @@ def _handle_help(args: argparse.Namespace):
 def _handle_config_get(args: argparse.Namespace):
     inp = ConfigGetInput(key=args.key)
     result = executor.execute("mcp.config_get", inp)
+    _print_result(result)
+
+def _handle_config_set(args: argparse.Namespace):
+    inp = ConfigSetInput(key=args.key, value=args.value)
+    result = executor.execute("mcp.config_set", inp)
+    _print_result(result)
+
+def _handle_reset_config(args: argparse.Namespace):
+    inp = ResetConfigInput(confirm=args.confirm)
+    result = executor.execute("mcp.reset_config", inp)
     _print_result(result)
 
 # --- Blender Handlers ---
@@ -220,6 +232,17 @@ def main(argv: list[str] | None = None) -> int:
     parser_config_get = config_subparsers.add_parser("get", help="Get a config value")
     parser_config_get.add_argument("key", help="Configuration key (e.g. logging.level)")
     parser_config_get.set_defaults(func=_handle_config_get)
+
+    # config set
+    parser_config_set = config_subparsers.add_parser("set", help="Set a config value")
+    parser_config_set.add_argument("key", help="Configuration key")
+    parser_config_set.add_argument("value", help="Value to set")
+    parser_config_set.set_defaults(func=_handle_config_set)
+
+    # config reset
+    parser_config_reset = config_subparsers.add_parser("reset", help="Reset config to defaults")
+    parser_config_reset.add_argument("--confirm", action="store_true", help="Confirm reset")
+    parser_config_reset.set_defaults(func=_handle_reset_config)
 
     if HAS_BLENDER:
         # mcp.generate_scene

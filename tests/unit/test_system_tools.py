@@ -95,8 +95,16 @@ def test_config_set_not_implemented():
     assert result.status == "error"
     assert result.error.code == "NOT_IMPLEMENTED"
 
-def test_reset_config_not_implemented():
+def test_reset_config_requires_confirmation():
     inp = ResetConfigInput()
+    result = reset_config_handler(inp)
+
+    assert result.status == "error"
+    assert result.error.code == "CONFIRMATION_REQUIRED"
+
+
+def test_reset_config_not_implemented_when_confirmed():
+    inp = ResetConfigInput(confirm=True)
     result = reset_config_handler(inp)
 
     assert result.status == "error"

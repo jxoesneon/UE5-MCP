@@ -102,6 +102,19 @@ class ToolExecutor:
             # 4. Policy Check
             policy_engine.check_tool_allowed(tool_name)
 
+            # Check if operation is destructive (not dry_run and mutates state)
+            is_dry_run = getattr(input_model, "dry_run", True)
+            is_destructive = not is_dry_run and tool_name not in [
+                "mcp.list_commands", "mcp.help", "mcp.config_get",
+                "mcp.profile_performance", "mcp.debug_blueprint"
+            ]
+            policy_engine.check_destructive_allowed(tool_name, is_destructive)
+
+            # Check path allowlist for file operations
+            filepath = getattr(input_model, "filepath", None)
+            if filepath:
+                policy_engine.check_path_allowed(filepath)
+
             # 5. Execution
             result_or_error = cast(ToolResult | ToolError, tool_entry.handler(input_model))
 

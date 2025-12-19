@@ -58,6 +58,11 @@ Recommended error codes:
 - `DEPENDENCY_MISSING`
 - `IO_ERROR`
 - `INTERNAL_ERROR`
+- `EXECUTION_ERROR`
+- `NOT_IMPLEMENTED`
+- `CONFIRMATION_REQUIRED`
+- `CONFIG_KEY_NOT_FOUND`
+- `TOOL_NOT_FOUND`
 
 ## Execution Semantics
 - Tools MUST declare whether they are **read-only** or have **side effects**.
@@ -190,8 +195,114 @@ Recommended error codes:
   - `blueprint_name` (string)
 - **Side effects**: None by default.
 
+## 3. System Tools
+
+### `mcp.list_commands`
+- **Purpose**: List all available tools and their schemas.
+- **Inputs**: None
+- **Side effects**: None
+- **Result**: Array of tool definitions with names, descriptions, and input schemas.
+
+### `mcp.help`
+- **Purpose**: Get detailed help for a specific tool.
+- **Inputs**:
+  - `command_name` (string)
+- **Side effects**: None
+- **Result**: Tool name, description, and full input schema.
+
+### `mcp.config_get`
+- **Purpose**: Read an effective configuration value.
+- **Inputs**:
+  - `key` (string) - Dot-notation path (e.g., `logging.level`)
+- **Side effects**: None
+- **Result**: Key-value pair. Secrets are redacted.
+
+### `mcp.config_set`
+- **Purpose**: Set a configuration value at runtime.
+- **Inputs**:
+  - `key` (string)
+  - `value` (any)
+- **Side effects**: Modifies runtime configuration.
+- **Status**: Not yet implemented. Use environment variables or config files.
+
+### `mcp.reset_config`
+- **Purpose**: Reset configuration to defaults.
+- **Inputs**:
+  - `confirm` (boolean) - Must be true to proceed.
+- **Side effects**: Destructive write.
+- **Status**: Not yet implemented.
+
+## Transport Layer
+
+### Blender Transport (Stdio)
+
+MCP communicates with Blender via subprocess stdin/stdout:
+
+```python
+from mcp_target_blender.transport import StdioTransport
+
+transport = StdioTransport(blender_path="/path/to/blender")
+transport.connect()  # Launches Blender subprocess
+response = transport.send_command("generate_scene", {"description": "..."})
+transport.disconnect()  # Terminates subprocess
+```
+
+### UE5 Transport (HTTP)
+
+MCP communicates with UE5 via HTTP to a plugin server:
+
+```python
+from mcp_target_ue5.transport import HttpTransport
+
+transport = HttpTransport(host="localhost", port=8080)
+transport.connect()  # Health check
+response = transport.send_command("generate_terrain", {"width": 1000, ...})
+```
+
+**Error Types:**
+- `ConnectionError` - Target unavailable (code: `TARGET_UNAVAILABLE`)
+- `TimeoutError` - Command timed out (code: `TIMEOUT`)
+- `CommandError` - Execution failed (code: `EXECUTION_ERROR`)
+
+## AI Integration
+
+### Provider Abstraction
+
+```python
+from mcp_core.ai import create_ai_client
+
+client = create_ai_client()  # Uses OpenAI by default
+response = await client.generate(
+    prompt_name="scene_generation",
+    variables={"description": "A medieval village"}
+)
+```
+
+### Budget Enforcement
+
+AI usage is tracked and limited per configuration:
+
+```json
+{
+  "ai": {
+    "budget": {
+      "max_requests_per_run": 20,
+      "max_total_tokens": 20000,
+      "max_total_cost_usd": 5.0
+    }
+  }
+}
+```
+
+### Safety Controls
+
+- Input/output validation against injection patterns
+- Tool allowlist/denylist
+- No direct execution of model-generated code
+
 ## Authentication & Configuration
 - Tool execution is configured via the files described in `configurations.md`.
 - AI providers require credentials; credentials MUST be supplied via configuration or environment variables and MUST NOT be written to logs.
 
 For CLI usage, refer to `commands.md`.
+For setup instructions, refer to `docs/setup/quickstart.md`.

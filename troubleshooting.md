@@ -107,6 +107,7 @@ Resolution:
 - confirm your Python version meets `dependencies.md`
 - confirm MCP is installed in the active environment
 - confirm `PATH` includes the installed entrypoint
+- try running via the module directly: `python -m mcp`
 
 ### Config Parse Errors
 

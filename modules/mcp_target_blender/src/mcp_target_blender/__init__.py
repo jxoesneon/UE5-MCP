@@ -15,11 +15,15 @@ from .tools import (
 
 __all__ = ["__version__", "register_blender_tools"]
 
-__version__ = "0.7.0"
+__version__ = "1.0.0"
 
 
 def register_blender_tools(registry: ToolRegistry) -> None:
     """Register Blender-related tools with the registry."""
+    # Check if already registered to make this function idempotent
+    if registry.get_tool("mcp.generate_scene"):
+        return
+
     registry.register(
         name="mcp.generate_scene",
         description="Generate a Blender scene based on a description.",

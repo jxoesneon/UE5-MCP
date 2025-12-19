@@ -26,10 +26,10 @@ def test_policy_tool_allowlist():
     config = PolicyConfig(tool_allowlist=["allowed_tool"])
     with patch("mcp_core.config.settings.settings.policy", config):
         engine = PolicyEngine()
-        
+
         # Allowed
         engine.check_tool_allowed("allowed_tool")
-        
+
         # Blocked
         with pytest.raises(PermissionError, match="not in the allowlist"):
             engine.check_tool_allowed("forbidden_tool")
@@ -38,26 +38,26 @@ def test_policy_path_enforcement(tmp_path):
     """Verify allowed_paths enforcement using a real temp dir."""
     safe_dir = tmp_path / "safe"
     safe_dir.mkdir()
-    
+
     unsafe_dir = tmp_path / "unsafe"
     unsafe_dir.mkdir()
-    
+
     config = PolicyConfig(allowed_paths=[str(safe_dir)])
-    
+
     with patch("mcp_core.config.settings.settings.policy", config):
         engine = PolicyEngine()
-        
+
         # Allowed file
         safe_file = safe_dir / "file.txt"
         engine.check_path_allowed(str(safe_file))
-        
+
         # Unsafe file
         unsafe_file = unsafe_dir / "file.txt"
         with pytest.raises(PermissionError, match="not in the allowed_paths"):
             engine.check_path_allowed(str(unsafe_file))
 
         # Traversal attempt (if resolved)
-        # ../unsafe/file.txt from inside safe? 
+        # ../unsafe/file.txt from inside safe?
         # PolicyEngine resolves path first.
         traversal = safe_dir / ".." / "unsafe" / "file.txt"
         with pytest.raises(PermissionError, match="not in the allowed_paths"):

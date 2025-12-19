@@ -46,29 +46,97 @@ See:
 - `commands.md` for the command surface
 - `api_reference.md` for programmatic APIs
 
-## Quickstart (Spec-Driven)
+## Quickstart
 
-Until the implementation is available, you can still use the docs to plan integrations and project structure.
+> **New to UE5-MCP?** See the [Quickstart Guide](docs/setup/quickstart.md) for detailed setup instructions.
+
+### Installation
+
+#### Option 1: From Source (Recommended for Developers)
+
+```bash
+# Clone the repository
+git clone https://github.com/jxoesneon/UE5-MCP.git
+cd UE5-MCP
+
+# Install with uv (recommended)
+uv sync
+source .venv/bin/activate
+
+# Or with pip
+pip install .
+```
+
+#### Option 2: From Wheel (if available)
+
+```bash
+pip install ue5_mcp-1.0.0-py3-none-any.whl
+```
+
+### Setup
 
 1. **Install prerequisites**
    - Blender 3.x+
    - UE 5.1+
    - Python 3.11+
 
-2. **Enable UE plugins**
-   - `Python Editor Script Plugin`
-   - `Procedural Content Generation (PCG) Framework`
-   - `UnrealCV Plugin` (if using UnrealCV-based transport)
+2. **Create configuration files**
 
-3. **Create configs**
-   - Blender: `~/.mcp/blender_mcp_config.json`
-   - UE5: `~/.mcp/ue5_mcp_config.json`
+   Create `~/.mcp/blender_mcp_config.json`:
 
-4. **Run commands (examples)**
-   - `mcp.generate_scene "A medieval village with a river"`
-   - `mcp.export_asset "bridge_model" "fbx" "./exports/bridge.fbx"`
-   - `mcp.generate_terrain 2000 2000 "high"`
-   - `mcp.generate_blueprint "A door opens when the player interacts."`
+   ```json
+   {
+     "blender": {
+       "transport": {
+         "executable_path": "blender"
+       }
+     },
+     "ue5": {
+       "transport": {
+         "host": "localhost",
+         "port": 8080
+       }
+     }
+   }
+   ```
+
+3. **Set up target connections**
+
+   **For Blender:** No additional setup needed if Blender is in your PATH.
+
+   **For UE5:**
+   - Enable `Python Editor Script Plugin` in UE5
+   - Copy `modules/mcp_target_ue5/plugin/ue5_mcp_server.py` to your project's `Content/Python/` folder
+   - Run `py ue5_mcp_server` in the UE5 Output Log
+
+4. **Verify installation**
+
+```bash
+# Check CLI
+mcp --version
+
+# If the 'mcp' command is not found, try:
+python -m mcp --version
+
+# Test Blender connection (dry-run)
+mcp blender generate-scene "A cube" --dry-run
+
+# Test UE5 connection
+curl http://localhost:8080/health
+```
+
+### Setup Guides
+
+- **[Quickstart Guide](docs/setup/quickstart.md)** - Get started in 10 minutes
+- **[Blender Setup](docs/setup/blender_setup.md)** - Detailed Blender configuration
+- **[UE5 Setup](docs/setup/ue5_setup.md)** - Detailed UE5 configuration
+
+### Examples
+
+- `mcp.generate_scene "A medieval village with a river"`
+- `mcp.export_asset "bridge_model" "fbx" "./exports/bridge.fbx"`
+- `mcp.generate_terrain 2000 2000 "high"`
+- `mcp.generate_blueprint "A door opens when the player interacts."`
 
 ## Security, Safety, and Governance (2025 Baseline)
 
@@ -81,6 +149,14 @@ See `configurations.md` and `ai_integration.md`.
 
 ## Documentation Map
 
+**Setup Guides:**
+
+- `docs/setup/quickstart.md`: Get started in 10 minutes
+- `docs/setup/blender_setup.md`: Detailed Blender configuration
+- `docs/setup/ue5_setup.md`: Detailed UE5 configuration and plugin setup
+
+**Reference:**
+
 - `architecture.md`: component boundaries, data flows, and security posture
 - `workflow.md`: end-to-end asset → engine pipeline
 - `commands.md`: CLI/tool surface and semantics
@@ -89,6 +165,12 @@ See `configurations.md` and `ai_integration.md`.
 - `dependencies.md`: reproducible dependencies and toolchain requirements
 - `troubleshooting.md`: diagnostic playbooks
 - `ROADMAP.md`: end-to-end implementation roadmap (phases, acceptance criteria, risks)
+
+**Target-Specific:**
+
+- `blender_mcp.md`: Blender integration specification
+- `ue5_mcp.md`: UE5 integration specification
+- `modules/mcp_target_ue5/plugin/README.md`: UE5 plugin documentation
 
 ## Roadmap (Implementation)
 

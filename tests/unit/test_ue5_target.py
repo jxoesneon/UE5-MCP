@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
 from mcp_core.observability.context import set_context
 from mcp_protocol.models import (
@@ -52,7 +54,8 @@ def test_generate_terrain(context_setup) -> None:
         width=1000,
         height=1000,
         detail_level="high",
-        seed=12345
+        seed=12345,
+        dry_run=True
     )
     result = generate_terrain(input_data)
     assert result.status == "ok"
@@ -64,7 +67,8 @@ def test_populate_level(context_setup) -> None:
     input_data = PopulateLevelInput(
         asset_type="Tree_01",
         density=100,
-        seed=12345
+        seed=12345,
+        dry_run=True
     )
     result = populate_level(input_data)
     assert result.status == "ok"
@@ -85,7 +89,8 @@ def test_generate_blueprint(context_setup) -> None:
 
 def test_profile_performance(context_setup) -> None:
     input_data = ProfilePerformanceInput(
-        level_name="TestLevel"
+        level_name="TestLevel",
+        dry_run=True
     )
     result = profile_performance(input_data)
     assert result.status == "ok"
@@ -104,7 +109,8 @@ def test_optimize_level(context_setup) -> None:
 
 def test_debug_blueprint(context_setup) -> None:
     input_data = DebugBlueprintInput(
-        blueprint_name="BP_Door"
+        blueprint_name="BP_Door",
+        dry_run=True
     )
     result = debug_blueprint(input_data)
     assert result.status == "ok"
@@ -115,8 +121,18 @@ def test_transport_instantiation() -> None:
     transport = HttpTransport(host="localhost", port=8080)
     assert transport.base_url == "http://localhost:8080"
 
-    # Test stub methods
-    transport.connect()
-    resp = transport.send_command("ping", {})
-    assert resp["status"] == "ok"
-    transport.disconnect()
+    # Test with mocked HTTP calls
+    with patch("httpx.get") as mock_get, patch("httpx.post") as mock_post:
+        # Mock health check
+        mock_get.return_value = MagicMock(status_code=200)
+        mock_get.return_value.raise_for_status = MagicMock()
+
+        # Mock command response
+        mock_post.return_value = MagicMock(status_code=200)
+        mock_post.return_value.raise_for_status = MagicMock()
+        mock_post.return_value.json.return_value = {"status": "ok", "data": {}}
+
+        transport.connect()
+        resp = transport.send_command("ping", {})
+        assert resp["status"] == "ok"
+        transport.disconnect()
